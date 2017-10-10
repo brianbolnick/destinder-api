@@ -12,7 +12,10 @@ end
 
 chdir APP_ROOT do
   # This script is a way to update your development environment automatically.
-  # Add necessary update steps to this file.
+  # Add necessary update steps to this file.\
+
+  puts "\n== Fetching latest changes =="
+  system! "git pull --rebase"
 
   puts '== Installing dependencies =='
   system! 'gem install bundler --conservative'
@@ -21,9 +24,11 @@ chdir APP_ROOT do
   puts "\n== Updating database =="
   system! 'bin/rails db:migrate'
 
+  puts "\n== Updating front-end client =="
+  system! "cd client && git pull && yarn && cd #{APP_ROOT}"
+
   puts "\n== Removing old logs and tempfiles =="
   system! 'bin/rails log:clear tmp:clear'
 
-  puts "\n== Restarting application server =="
-  system! 'bin/rails restart'
+  puts "\n== Done! =="
 end
