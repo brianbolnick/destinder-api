@@ -1,6 +1,8 @@
 # destinder-api
 Complete rewrite of the back-end API for [Destinder LFG](https://www.destinder.com). Replaces the [Destinder v1 API](https://github.com/destiny-aviato/destinder).
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/6afa64ab9543b727fe51/maintainability)](https://codeclimate.com/github/destiny-aviato/destinder-api/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/6afa64ab9543b727fe51/test_coverage)](https://codeclimate.com/github/destiny-aviato/destinder-api/test_coverage)
+
 ## Installation Instructions
 
 ### Prerequisites
