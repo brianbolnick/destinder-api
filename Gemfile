@@ -19,9 +19,6 @@ gem 'puma', '~> 3.7'
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
-gem 'figaro'
-gem 'typhoeus'
-gem 'delayed_job_active_record'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
@@ -46,6 +43,8 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # Custom Gems
 gem 'foreman'
-gem 'omniauth-bungie-oauth2'
 gem 'devise'
 gem 'devise-jwt', '~> 0.4.1'
+gem 'figaro'
+gem 'typhoeus'
+gem 'delayed_job_active_record'
