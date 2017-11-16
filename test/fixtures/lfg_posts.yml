@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  is_fireteam_post: false
+  player_data: MyText
+  fireteam_name: MyString
+  fireteam_data: MyString
+
+two:
+  is_fireteam_post: false
+  player_data: MyText
+  fireteam_name: MyString
+  fireteam_data: MyString

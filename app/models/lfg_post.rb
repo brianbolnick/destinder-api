@@ -1,0 +1,2 @@
+class LfgPost < ApplicationRecord
+end

@@ -6,8 +6,6 @@ class Authenticator
       user_info_resp = fetch_bungie_user_info(access_token)
       user_info = user_info_resp["Response"]
 
-        # puts user_info
-
       if user_info.keys.any? {|k| k.include? 'xboxDisplayName'}
         display_name = user_info["xboxDisplayName"]
         membership_type = 1
