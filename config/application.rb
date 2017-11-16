@@ -30,6 +30,23 @@ module DestinderApi
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
+    config.middleware.insert_before 0, Rack::Cors do
+      allow do
+        origins 'http://localhost:3000'
+        resource '*', :headers => :any, :methods => [:get, :post, :put, :delete, :options]
+      end
+
+      allow do
+        origins 'http://www.destinder.com'
+        resource '*', :headers => :any, :methods => [:get, :post, :put, :delete, :options]
+      end
+
+      allow do
+        origins 'http://www.destinder-client-beta.herokuapp.com'
+        resource '*', :headers => :any, :methods => [:get, :post, :put, :delete, :options]
+      end
+    end
+
     # For Devise when used in API mode
     config.to_prepare do
       DeviseController.respond_to :html, :json
