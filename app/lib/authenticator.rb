@@ -2,6 +2,7 @@ class Authenticator
 
     def bungie(code)
       access_token_resp = fetch_bungie_access_token(code)
+      debugger
       access_token = access_token_resp['access_token']
       user_info_resp = fetch_bungie_user_info(access_token)
       user_info = user_info_resp["Response"]
