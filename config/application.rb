@@ -42,7 +42,7 @@ module DestinderApi
       end
 
       allow do
-        origins 'http://www.destinder-client-beta.herokuapp.com'
+        origins 'https://www.destinder-client-beta.herokuapp.com'
         resource '*', :headers => :any, :methods => [:get, :post, :put, :delete, :options]
       end
     end
