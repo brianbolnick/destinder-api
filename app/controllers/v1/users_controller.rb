@@ -39,6 +39,10 @@ module V1
       # def destroy
       #   @user.destroy
       # end
+
+      def characters 
+        render json: {user: params[:user_id]}
+      end
     
       private
         # Use callbacks to share common setup or constraints between actions.

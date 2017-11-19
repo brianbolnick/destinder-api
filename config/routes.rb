@@ -9,7 +9,9 @@ Rails.application.routes.draw do
   end
 
   namespace :v1 do 
-    resources :users
+    resources :users do
+      get 'characters', to: 'users#characters'
+    end
     resources :lfg_posts
   end 
 end

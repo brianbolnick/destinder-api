@@ -9,11 +9,9 @@ class AuthenticationController < ApplicationController
     locale = user_info[:locale]
     membership_id = user_info[:membership_id]
     membership_type = user_info[:membership_type]
-    # # Generate token...
-    token = AuthToken.encodeBungie(user_info)
-    # puts token
-    # ... create user if it doesn't exist...
-    User.where(display_name: display_name).first_or_create!(
+
+    #create user if it doesn't exist...
+    user = User.where(display_name: display_name).first_or_create!(
       display_name: display_name,
       profile_picture: profile_picture,
       locale: locale,
@@ -21,9 +19,11 @@ class AuthenticationController < ApplicationController
       api_membership_type: membership_type
     )
 
-    # puts "authenticated and user created!"
-    # puts User.where(login: login)
-    # redirect to client app.
+    user_info.merge!(user_id: user.id)
+
+    # # Generate token...
+    token = AuthToken.encodeBungie(user_info)
+
     redirect_to "#{issuer}?token=#{token}"
   rescue StandardError => error
     redirect_to "#{issuer}/auth_error?error=#{error.message}"

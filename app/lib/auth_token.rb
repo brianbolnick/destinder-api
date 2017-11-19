@@ -4,6 +4,7 @@ module AuthToken
       payload = {
         iss: ENV['DESTINDER_CLIENT_URL'],
         type: 'bungie',
+        user_id: sub[:user_id],
         membership_id: sub[:membership_id],
         membership_type: sub[:membership_type],
         display_name: sub[:display_name],
