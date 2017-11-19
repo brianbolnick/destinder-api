@@ -41,7 +41,49 @@ module V1
       # end
 
       def characters 
-        render json: {user: params[:user_id]}
+        render json: [
+          {
+            "character_id": 2305843009265284017,
+            "character_type": "Warlock",
+            "subclass": "voidwalker",
+            "subclass_icon": "url",
+            "light_level": "362",
+            "emblem": "string",
+            "emblem_background": "string"
+          },
+          {
+            "character_id": 2305843009265284018,
+            "character_type": "Titan",
+            "subclass": "Sentinel",
+            "subclass_icon": "url",
+            "light_level": "362",
+            "emblem": "string",
+            "emblem_background": "string"
+          },
+          {
+            "character_id": 2305843009265284019,
+            "character_type": "Hunter",
+            "subclass": "Arcstrider",
+            "subclass_icon": "url",
+            "light_level": "362",
+            "emblem": "string",
+            "emblem_background": "string"
+          }
+       ]
+      end
+
+      def find
+        @users = []
+        User.where("display_name ILIKE ?", "%#{params[:query]}%").each do |x| 
+          # TODO: Add logic to retrieve character id
+          @users << {
+            user_id: x.id,
+            display_name: x.display_name,
+            avatar: x.profile_picture,
+            character_id: 12345
+          } 
+        end
+        render json: @users
       end
     
       private
