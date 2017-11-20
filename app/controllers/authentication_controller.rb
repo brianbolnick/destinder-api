@@ -10,6 +10,8 @@ class AuthenticationController < ApplicationController
     membership_id = user_info[:membership_id]
     membership_type = user_info[:membership_type]
 
+
+    debugger
     #create user if it doesn't exist...
     user = User.where(display_name: display_name).first_or_create!(
       display_name: display_name,
@@ -19,6 +21,7 @@ class AuthenticationController < ApplicationController
       api_membership_type: membership_type
     )
 
+    
     user_info.merge!(user_id: user.id)
 
     # # Generate token...

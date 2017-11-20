@@ -5,8 +5,8 @@ class Vote < ActiveRecord::Base
   scope :recent, lambda { |*args| where(["created_at > ?", (args.first || 2.weeks.ago)]) }
   scope :descending, lambda { order("created_at DESC") }
 
-  belongs_to :voteable, :polymorphic => true
-  belongs_to :voter, :polymorphic => true
+  belongs_to :voteable, :polymorphic => true, optional: true
+  belongs_to :voter, :polymorphic => true, optional: true
 
   attr_accessible :vote, :voter, :voteable if ActiveRecord::VERSION::MAJOR < 4
 
