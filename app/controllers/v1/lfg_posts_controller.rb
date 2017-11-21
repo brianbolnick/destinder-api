@@ -18,7 +18,8 @@ module V1
       
         # POST /lfg_posts
         def create
-            puts "PARAMS: #{params}\n Fireteam: #{params[:fireteam].nil?}"
+            
+            puts "PARAMS: #{params}\n Fireteam: #{params[:fireteam].nil?} \n Player: #{params[:user_id]}"
             team = []
             if !params[:fireteam].nil?
                 is_fireteam_post = params[:fireteam].any?
@@ -35,9 +36,12 @@ module V1
             end
             player_data = "player data"
             message = params[:message]
-            temp_params = {:is_fireteam_post => is_fireteam_post, :player_data => player_data, :fireteam_name => "temp name", :fireteam_data => team, :message => message}
+            user_id = params[:user_id]
+            temp_params = {user_id: user_id, :is_fireteam_post => is_fireteam_post, :player_data => player_data, :fireteam_name => "temp name", :fireteam_data => team, :message => message}
             # {"mode"=>"story", "character_id"=>"titan", "looking_for"=>"any", "fireteam"=>[3], "message"=>"sda", "has_mic"=>true, "game_mode_toggle"=>true, "controller"=>"v1/lfg_posts", "action"=>"create", "lfg_post"=>{}}
             @lfg_post = LfgPost.new(temp_params)
+
+            
         
             if @lfg_post.save
                 render json: @lfg_post, status: :created
@@ -58,6 +62,7 @@ module V1
         # DELETE /lfg_posts/1
         def destroy
           @lfg_post.destroy
+          render json: {status: "complete"}
         end
       
         private
