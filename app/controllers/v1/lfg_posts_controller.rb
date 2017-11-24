@@ -2,7 +2,6 @@ module V1
     class LfgPostsController < ApplicationController
         before_action :set_lfg_post, only: [:show, :update, :destroy]
         before_action :authenticate_user!, only: [:create, :update, :destroy]
-        # before_action :authenticate_user!
       
         # GET /lfg_posts
         def index
@@ -18,8 +17,6 @@ module V1
       
         # POST /lfg_posts
         def create
-            
-            puts "PARAMS: #{params}\n Fireteam: #{params[:fireteam].nil?} \n Player: #{params[:user_id]}"
             team = []
             if !params[:fireteam].nil?
                 is_fireteam_post = params[:fireteam].any?
@@ -35,16 +32,24 @@ module V1
                 is_fireteam_post = false
             end
             player_data = "player data"
-            message = params[:message]
-            user_id = params[:user_id]
-            temp_params = {user_id: user_id, :is_fireteam_post => is_fireteam_post, :player_data => player_data, :fireteam_name => "temp name", :fireteam_data => team, :message => message}
-            # {"mode"=>"story", "character_id"=>"titan", "looking_for"=>"any", "fireteam"=>[3], "message"=>"sda", "has_mic"=>true, "game_mode_toggle"=>true, "controller"=>"v1/lfg_posts", "action"=>"create", "lfg_post"=>{}}
-            @lfg_post = LfgPost.new(temp_params)
-
             
-        
+            @user = User.find(params[:user_id])        
+            character_data = @user.character_data.find { |char| char[0] == params[:character_id] }
+
+            @lfg_post = LfgPost.new(
+                user_id: params[:user_id], 
+                is_fireteam_post: is_fireteam_post, 
+                player_data: player_data, 
+                fireteam_name: "temp name", 
+                fireteam_data: team, 
+                message: params[:message],
+                has_mic: params[:has_mic],
+                looking_for: params[:looking_for],
+                character_data: character_data.second.to_json
+            )
+
             if @lfg_post.save
-                render json: @lfg_post, status: :created
+                render json: @lfg_post,  status: :created
             else
                 render json: @lfg_post.errors, status: :unprocessable_entity
             end
@@ -75,7 +80,9 @@ module V1
           # Only allow a trusted parameter "white list" through.
           def lfg_post_params
             params.require(:lfg_post).permit(
-                :is_fireteam_post, :player_data, :fireteam_name, :fireteam_data, :message
+                :is_fireteam_post, :player_data, :fireteam_name, 
+                :fireteam_data, :message, :has_mic, :looking_for, 
+                :game_type, :character_data
             )
           end
       end

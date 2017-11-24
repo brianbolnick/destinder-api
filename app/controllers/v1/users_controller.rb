@@ -41,40 +41,21 @@ module V1
       # end
 
       def characters 
-        render json: [
-          {
-            "character_id": 2305843009265284017,
-            "character_type": "Warlock",
-            "subclass": "voidwalker",
-            "subclass_icon": "url",
-            "light_level": "362",
-            "emblem": "string",
-            "emblem_background": "string"
-          },
-          {
-            "character_id": 2305843009265284018,
-            "character_type": "Titan",
-            "subclass": "Sentinel",
-            "subclass_icon": "url",
-            "light_level": "362",
-            "emblem": "string",
-            "emblem_background": "string"
-          },
-          {
-            "character_id": 2305843009265284019,
-            "character_type": "Hunter",
-            "subclass": "Arcstrider",
-            "subclass_icon": "url",
-            "light_level": "362",
-            "emblem": "string",
-            "emblem_background": "string"
-          }
-       ]
+        @user = User.find_by(id: params[:user_id])
+        @user.get_character_data
+        render json: @user.character_data 
+      end
+
+      def character 
+        # TODO: Should this ever need to check if data is nil or refresh the data before responding?
+        @user = User.find(params[:user_id])        
+        @character = @user.character_data.find { |char| char[0] == params[:id] }
+        render json: @character
       end
 
       def find
         @users = []
-        User.where("display_name ILIKE ?", "%#{params[:query]}%").each do |x| 
+        User.where("display_name ILIKE ?", "%#{ params[:data]}%").each do |x| 
           # TODO: Add logic to retrieve character id
           @users << {
             user_id: x.id,

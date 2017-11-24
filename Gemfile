@@ -49,3 +49,5 @@ gem 'typhoeus'
 gem 'delayed_job_active_record'
 gem 'thumbs_up'
 gem 'rack-cors', :require => 'rack/cors'
+gem 'pry-rails', :group => :development
+gem 'merit', github: "tamycova/merit", branch: 'f657596409d98fc7c8e3274b213b86cc47d87495'

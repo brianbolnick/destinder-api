@@ -30,6 +30,9 @@ module DestinderApi
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
+    # use delayed job 
+    config.active_job.queue_adapter = :delayed_job
+
     config.middleware.insert_before 0, Rack::Cors do
       allow do
         origins 'http://localhost:3000'

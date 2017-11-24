@@ -9,10 +9,10 @@ Rails.application.routes.draw do
   end
 
   namespace :v1 do 
-    get 'users/find/*query', to: "users#find"
+    get 'users/find(/:data)', to: "users#find"
     resources :users do
       get 'characters', to: 'users#characters'
-      
+      get 'characters/:id', to: 'users#character'
     end
     resources :lfg_posts
   end 
