@@ -15,4 +15,23 @@ module CommonConstants
       }.freeze
 
     CHARACTER_CLASSES = { 0 => 'Titan', 1 => 'Hunter', 2 => 'Warlock' }.freeze
+
+    GAME_MODES = {
+      2 => 'story',
+      3 => 'strike',
+      4 => 'raid',
+      5 => 'allPvP',
+      6 => 'patrol',
+      7 => 'allPvE',
+      10 => 'control',
+      12 => 'clash',
+      16 => 'nightfall',
+      17 => 'heroicNightfall',
+      18 => 'allStrikes',
+      19 => 'ironBanner',
+      31 => 'supremacy',
+      37 => 'survival',
+      38 => 'countdown',
+      39 => 'trialsofthenine'
+    }.freeze
 end

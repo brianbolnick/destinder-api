@@ -2,13 +2,13 @@ class AuthenticationController < ApplicationController
   def bungie
     authenticator = Authenticator.new
     user_info = authenticator.bungie(params[:code])
-  #  debugger
-    # login = user_info[:login]
+
     display_name = user_info[:display_name]
     profile_picture = user_info[:profile_picture]
     locale = user_info[:locale]
     membership_id = user_info[:membership_id]
     membership_type = user_info[:membership_type]
+    
     #create user if it doesn't exist...
     user = User.where(display_name: display_name).first_or_create!(
       display_name: display_name,

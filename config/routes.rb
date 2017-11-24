@@ -13,6 +13,8 @@ Rails.application.routes.draw do
     resources :users do
       get 'characters', to: 'users#characters'
       get 'characters/:id', to: 'users#character'
+      get 'characters/stats(/:mode)', to: 'users#stats'
+      get 'characters/:id/stats(/:mode)', to: 'users#character_stats'
     end
     resources :lfg_posts
   end 

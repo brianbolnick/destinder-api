@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class FetchCharacterStatsJobTest < ActiveJob::TestCase
+class FetchPostCharacterStatsJobTest < ActiveJob::TestCase
   # test "the truth" do
   #   assert true
   # end

@@ -53,6 +53,17 @@ module V1
         render json: @character
       end
 
+      def stats 
+
+      end
+
+      def character_stats
+        puts params
+        @user = User.find(params[:user_id]) 
+        FetchCharacterStatsJob.perform_later(@user, params[:id], params[:mode])
+        render json: {test: "data"}
+      end
+
       def find
         @users = []
         User.where("display_name ILIKE ?", "%#{ params[:data]}%").each do |x| 
