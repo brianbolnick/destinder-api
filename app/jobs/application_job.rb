@@ -4,12 +4,11 @@ class ApplicationJob < ActiveJob::Base
   
     # TODO: Clean up this method
     def get_character_data(user)
-      puts "IN CHARACTER DATA"
-      # binding.pry
+
       # Make our request and get specific character data from it
       @request ||= api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Profile/#{membership_id}/?components=Characters,205")
       @characters_data ||= JSON.parse(@request.body)
-      # binding.pry
+
       items = @characters_data['Response']['characterEquipment']['data'][character_id]['items']
       subclass_item = items.find { |item| item['bucketHash'] == 3284755031 }
       @characters = @characters_data['Response']['characters']['data']

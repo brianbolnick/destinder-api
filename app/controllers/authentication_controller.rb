@@ -14,7 +14,7 @@ class AuthenticationController < ApplicationController
       display_name: display_name,
       profile_picture: profile_picture,
       locale: locale,
-      api_membership_id: membership_id,
+      api_membership_id: membership_id.to_s,
       api_membership_type: membership_type
     )
 
