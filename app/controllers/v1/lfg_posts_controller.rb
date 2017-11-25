@@ -18,7 +18,7 @@ module V1
         # POST /lfg_posts
         def create
             team = []
-            
+            puts current_user
             if !params[:fireteam].nil?
                 is_fireteam_post = params[:fireteam].any?
                 params[:fireteam].each do |player|
@@ -32,12 +32,16 @@ module V1
             else
                 is_fireteam_post = false
             end
-            player_data = {}
+
             
-            @user = User.find(params[:user_id])        
+            
+            @user = User.find(params[:user_id])   
+            # @user.lfg_posts.build(lfg_post_params)     
+            player_data = LfgPost.get_character_stats(@user, params[:character_id], params[:mode])
             character_data = @user.character_data.find { |char| char[0] == params[:character_id] }
 
-            @lfg_post = LfgPost.new(
+            # debugger
+            @lfg_post = @user.lfg_posts.build(
                 user_id: params[:user_id], 
                 is_fireteam_post: is_fireteam_post, 
                 player_data: player_data, 
@@ -50,13 +54,13 @@ module V1
                 character_data: character_data.second.to_json
             )
 
-            
-
+        
             if @lfg_post.save
-                FetchPostCharacterStatsJob.perform_later(@lfg_post, params[:character_id], params[:mode])
-                # LfgPost.get_player_data(@lfg_post) 
-                sleep(5)
-                render json: LfgPost.find(@lfg_post.id),  status: :created           
+                # FetchPostCharacterStatsJob.perform_later(@lfg_post, params[:character_id], params[:mode])
+                # # LfgPost.get_player_data(@lfg_post) 
+                # sleep(5)
+                # debugger
+                render json: @lfg_post,  status: :created           
             else
                 render json: @lfg_post.errors, status: :unprocessable_entity
             end

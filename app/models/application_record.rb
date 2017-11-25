@@ -1,4 +1,5 @@
 class ApplicationRecord < ActiveRecord::Base
+  include CommonConstants
   self.abstract_class = true
 
   def stats(type, **args)
