@@ -39,6 +39,12 @@ class LfgPost < ApplicationRecord
               won =    !stats["activitiesWon"].nil? ? stats["activitiesWon"]["basic"]["displayValue"] : stats["activitiesCleared"]["basic"]["displayValue"]
               win_rate = ((won.to_f / entered.to_f) * 100).round
 
+              fastest = "-"
+              if !stats["fastestCompletionMs"].nil?
+                ms = stats["fastestCompletionMs"]["basic"]["value"]
+                fastest = Time.at(ms / 1000).utc.strftime("%H:%M:%S")
+              end 
+              
               @character_stats = {
                 'player_name' => user.display_name,
                 "kd_ratio": stats["killsDeathsRatio"]["basic"]["displayValue"],
@@ -50,7 +56,7 @@ class LfgPost < ApplicationRecord
                 "deaths": stats["deaths"]["basic"]["displayValue"],
                 "assists": stats["assists"]["basic"]["displayValue"],
                 "completions": !stats["activitiesCleared"].nil? ? stats["activitiesCleared"]["basic"]["displayValue"] : 0,
-                "fastest_completion": !stats["fastestCompletionMs"].nil? ? stats["fastestCompletionMs"]["basic"]["displayValue"] : "-",
+                "fastest_completion": fastest,
                 "games_played": stats["activitiesEntered"]["basic"]["displayValue"],
                 "average_lifespan": stats["averageLifespan"]["basic"]["displayValue"],
                 "kill_stats": {},
