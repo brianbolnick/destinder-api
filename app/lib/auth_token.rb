@@ -10,7 +10,7 @@ module AuthToken
         display_name: sub[:display_name],
         locale: sub[:locale],
         profile_picture: sub[:profile_picture],
-        exp: 4.hours.from_now.to_i,
+        exp: 8.hours.from_now.to_i,
         iat: Time.now.to_i
       }
       JWT.encode payload, ENV['JWT_SECRET'], 'HS256'
