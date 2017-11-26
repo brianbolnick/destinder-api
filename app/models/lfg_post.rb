@@ -4,6 +4,8 @@ class LfgPost < ApplicationRecord
     def self.get_character_stats(user, character_id, mode)
         hydra = Typhoeus::Hydra.hydra
     
+
+        badges = user.badges
         @character_stats = {
           'player_name': user.display_name,
           "kd_ratio": 0,
@@ -18,7 +20,8 @@ class LfgPost < ApplicationRecord
           "games_played": 0,
           "average_lifespan": "-",
           "kill_stats": {},
-          "items": {}
+          "items": {},
+          "player_badges": badges
         }
 
         if [100, 101, 102].include? mode
@@ -64,7 +67,9 @@ class LfgPost < ApplicationRecord
                     "games_played": stats["activitiesEntered"]["basic"]["displayValue"],
                     "average_lifespan": stats["averageLifespan"]["basic"]["displayValue"],
                     "kill_stats": {},
-                    "items": ()
+                    "items": (),
+                    "player_badges": badges
+
                 }
                 end
             end
