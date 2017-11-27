@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   namespace :v1 do 
     get 'users/find(/:data)', to: "users#find"
     resources :users do
+      get 'badges', to: 'users#badges'
       get 'characters', to: 'users#characters'
       get 'characters/:id', to: 'users#character'
       get 'characters/stats(/:mode)', to: 'users#stats'

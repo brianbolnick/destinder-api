@@ -7,12 +7,12 @@ module V1
       def index
         @users = User.all
     
-        render json: @users
+        render json: @users.to_json( :include => [:badges] )
       end
     
       # GET /users/1
       def show
-        render json: @user
+        render json: @user.to_json( :include => [:badges] )
       end
     
       # POST /users
@@ -62,6 +62,11 @@ module V1
         @user = User.find(params[:user_id]) 
         FetchCharacterStatsJob.perform_later(@user, params[:id], params[:mode])
         render json: {test: "data"}
+      end
+
+      def badges
+        @user = User.find(params[:user_id])
+        render json: @user.badges 
       end
 
       def find
