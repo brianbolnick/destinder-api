@@ -23,10 +23,14 @@ module V1
                 is_fireteam_post = params[:fireteam].any?
                 params[:fireteam].each do |player|
                     user = User.find_by(id: player)
+                    # last_character = LfgPost.get_current_character(user)
+                    # player_stats = LfgPost.get_character_stats(user, params[:character_id], params[:mode])
+                    last_character = LfgPost.get_current_character(current_user)
+                    player_stats = LfgPost.get_character_stats(current_user, last_character, params[:mode])
                     team << {
                         player_name: user.display_name,
                         user_id: user.id,
-                        player_data: "data"
+                        player_data: player_stats
                     }
                 end
             else

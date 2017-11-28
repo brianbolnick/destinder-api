@@ -105,4 +105,19 @@ class LfgPost < ApplicationRecord
       {"elo" => elo.round, "rank" => rank.round}
       
     end
+
+    def self.get_current_character(user)    
+        @last_character = user.character_data.first[0]
+        last_played = user.character_data.first[1][:last_login]
+
+        user.character_data.each do |char|
+            if Time.parse(char[1][:last_login]) > Time.parse(last_played)
+                last_played = char[1][:last_login]
+                @last_character = char[0]
+            end
+        end
+
+        @last_character
+
+    end
 end

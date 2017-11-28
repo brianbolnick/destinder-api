@@ -23,7 +23,8 @@ class FetchCharacterDataJob < ApplicationJob
         "subclass": subclass_name,
         "light_level": light,
         "emblem": "https://www.bungie.net#{emblem}",
-        "emblem_background": "https://www.bungie.net#{bg}"              
+        "emblem_background": "https://www.bungie.net#{bg}",
+        "last_login": last_played              
       }
     end
     user.character_data =  character_data
