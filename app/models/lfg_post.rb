@@ -5,8 +5,15 @@ class LfgPost < ApplicationRecord
         # hydra = Typhoeus::Hydra.hydra
     
         badges = user.badges
+        votes_for = user.votes_for
+        votes_against = user.votes_against
+        total_votes = votes_against + votes_for
+        rep = total_votes > 0 ? (votes_for.to_f / total_votes.to_f).round(2) * 100 : 100
+        
         @character_stats = {
-          'player_name': user.display_name,
+          "player_name": user.display_name,
+          "reputation": rep,
+          "total_votes": total_votes,
           "kd_ratio": 0,
           "kad_ratio": 0,
           "win_rate": 0,
@@ -51,7 +58,9 @@ class LfgPost < ApplicationRecord
                     end 
                     
                     @character_stats = {
-                        'player_name' => user.display_name,
+                        "player_name": user.display_name,
+                        "reputation": rep,
+                        "total_votes": total_votes,
                         "kd_ratio": stats["killsDeathsRatio"]["basic"]["displayValue"],
                         "kad_ratio": stats["killsDeathsAssists"]["basic"]["displayValue"],
                         # "win_rate": !stats["winLossRatio"].nil? ? stats["winLossRatio"]["basic"]["displayValue"] : 0,
@@ -77,7 +86,8 @@ class LfgPost < ApplicationRecord
         end
 
         
-        # debugger
+        
+        puts @character_stats.to_json
         @character_stats.to_json
 
 end    
