@@ -18,14 +18,26 @@ module V1
         # POST /lfg_posts
         def create
             team = []
+            @user = current_user
 
             if !params[:fireteam].nil?
                 is_fireteam_post = params[:fireteam].any?
                 params[:fireteam].each do |player|
                     user = User.find_by(id: player)
-                    last_character = LfgPost.get_current_character(user)
-                    player_stats = LfgPost.get_character_stats(user, last_character, params[:mode])
-                    char_data = user.character_data.find { |char| char[0] == last_character }
+                    begin
+                        last_character = LfgPost.get_current_character(user)
+                    rescue StandardError => e
+                        puts e
+                        last_character = nil
+                    end
+                    
+                    if !last_character.nil?
+                        player_stats = LfgPost.get_character_stats(user, last_character, params[:mode])
+                        char_data = user.character_data.find { |char| char[0] == last_character }
+                    else 
+                        char_data = @user.character_data.find { |char| char[0] == params[:character_id] }
+                        player_stats = LfgPost.get_character_stats(user, last_character, params[:character_id])
+                    end
                     team << {
                         player_name: user.display_name,
                         user_id: user.id,
@@ -37,7 +49,7 @@ module V1
                 is_fireteam_post = false
             end
 
-            @user = current_user   
+               
             player_data = LfgPost.get_character_stats(@user, params[:character_id], params[:mode])
             character_data = @user.character_data.find { |char| char[0] == params[:character_id] }
 

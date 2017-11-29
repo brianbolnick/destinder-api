@@ -1,7 +1,7 @@
 module V1
   class UsersController < ApplicationController
       before_action :set_user, only: [:show, :update, :destroy]
-      before_action :authenticate_user!, only: [:create, :update, :destroy]
+      before_action :authenticate_user!, only: [:create, :update, :destroy, :upvote, :downvote, :unvote]
     
       # GET /users
       def index
@@ -62,6 +62,43 @@ module V1
         @user = User.find(params[:user_id]) 
         FetchCharacterStatsJob.perform_later(@user, params[:id], params[:mode])
         render json: {test: "data"}
+      end
+
+
+      def upvote
+        begin
+          if params[:user_id]
+            voteable = User.find_by(id: params[:user_id])
+            current_user.vote_for(voteable)
+            render json: {success: 'Vote cast', data: 'Upvote'}
+          end
+        rescue StandardError => e
+            render json: {failure: e}
+        end
+      end
+    
+      def downvote
+        begin
+          if params[:user_id]
+            voteable = User.find_by(id: params[:user_id])
+            current_user.vote_against(voteable)
+            render json: {success: 'Vote cast', data: 'Downvote'}
+          end
+        rescue StandardError => e
+            render json: {failure: e}
+        end
+      end
+    
+      def unvote
+        begin
+          if params[:user_id]
+            voteable = User.find_by(id: params[:user_id])
+            current_user.unvote_for(voteable)
+            render json: {success: 'Vote removed', data: 'Removed'}
+          end
+        rescue StandardError => e
+            render json: {failure: e}
+        end
       end
 
       def badges
