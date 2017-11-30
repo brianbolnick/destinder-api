@@ -7,10 +7,10 @@ module V1
         def index
             if auth_present?
                 puts current_user.id
-                @lfg_posts = LfgPost.where(:platform => current_user.api_membership_type)
+                @lfg_posts = LfgPost.where(:platform => current_user.api_membership_type).order(:created_at)
             else
                 puts params[:platform]
-                @lfg_posts = LfgPost.where(:platform => params[:platform])
+                @lfg_posts = LfgPost.where(:platform => params[:platform]).order(:created_at)
             end
         
           render json: @lfg_posts
@@ -25,7 +25,20 @@ module V1
         def create
             team = []
             @user = current_user
-
+            LfgPost.where(:user_id => current_user.id).destroy_all
+            puts params[:checkpoint]
+            # "https://www.bungie.net/d1/Platform/Destiny/Stats/AggregateActivityStats/#{user.api_membership_type}/#{user.api_membership_id}/#{c['characterBase']['characterId']}/",
+            # https://www.bungie.net/Platform/Destiny2/2/Account/4611686018436268793/Character/2305843009267409658/Stats/AggregateActivityStats/
+            mode = params[:mode]
+            if params[:checkpoint]
+                if [].include? params[:checkpoint]
+                    # 3879860661 prestige
+                    raid_mode = 3879860661
+                elsif [].include? params[:checkpoint]
+                    # 2693136605 normal
+                    raid_mode = 2693136605
+                end            
+            end
             if !params[:fireteam].nil?
                 is_fireteam_post = params[:fireteam].any?
                 params[:fireteam].each do |player|
@@ -38,7 +51,7 @@ module V1
                     end
                     
                     if !last_character.nil?
-                        player_stats = LfgPost.get_character_stats(user, last_character, params[:mode])
+                        player_stats = LfgPost.get_character_stats(user, last_character, mode)
                         char_data = user.character_data.find { |char| char[0] == last_character }
                     else 
                         char_data = @user.character_data.find { |char| char[0] == params[:character_id] }
@@ -49,14 +62,14 @@ module V1
                         user_id: user.id,
                         player_data: player_stats,
                         character_data: char_data.to_json
-                }.to_json
+                    }.to_json
                 end
             else
                 is_fireteam_post = false
             end
 
                
-            player_data = LfgPost.get_character_stats(@user, params[:character_id], params[:mode])
+            player_data = LfgPost.get_character_stats(@user, params[:character_id], mode)
             character_data = @user.character_data.find { |char| char[0] == params[:character_id] }
 
             @lfg_post = @user.lfg_posts.build(
@@ -68,7 +81,7 @@ module V1
                 message: params[:message],
                 has_mic: params[:has_mic],
                 looking_for: params[:looking_for],
-                game_type: params[:mode],
+                game_type: mode,
                 character_data: character_data.second.to_json,
                 platform: @user.api_membership_type
             )

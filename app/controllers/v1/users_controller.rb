@@ -5,7 +5,7 @@ module V1
     
       # GET /users
       def index
-        @users = User.all
+        @users = User.all.order(:created_at)
     
         render json: @users.to_json( :include => [:badges] )
       end
