@@ -5,8 +5,14 @@ module V1
       
         # GET /lfg_posts
         def index
-          @lfg_posts = LfgPost.all
-      
+            if auth_present?
+                puts current_user.id
+                @lfg_posts = LfgPost.where(:platform => current_user.api_membership_type)
+            else
+                puts params[:platform]
+                @lfg_posts = LfgPost.where(:platform => params[:platform])
+            end
+        
           render json: @lfg_posts
         end
       
@@ -63,7 +69,8 @@ module V1
                 has_mic: params[:has_mic],
                 looking_for: params[:looking_for],
                 game_type: params[:mode],
-                character_data: character_data.second.to_json
+                character_data: character_data.second.to_json,
+                platform: @user.api_membership_type
             )
 
         
@@ -102,7 +109,7 @@ module V1
             params.require(:lfg_post).permit(
                 :is_fireteam_post, :player_data, :fireteam_name, 
                 :fireteam_data, :message, :has_mic, :looking_for, 
-                :game_type, :character_data
+                :game_type, :character_data, :platform
             )
           end
       end

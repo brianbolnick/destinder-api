@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171123201013) do
+ActiveRecord::Schema.define(version: 20171130044303) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -53,6 +53,7 @@ ActiveRecord::Schema.define(version: 20171123201013) do
     t.string "looking_for"
     t.text "game_type"
     t.text "character_data"
+    t.string "platform"
     t.index ["user_id", "created_at"], name: "index_lfg_posts_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_lfg_posts_on_user_id"
   end

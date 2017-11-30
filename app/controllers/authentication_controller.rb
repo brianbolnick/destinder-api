@@ -1,5 +1,6 @@
 class AuthenticationController < ApplicationController
   def bungie
+    
     authenticator = Authenticator.new
     user_info = authenticator.bungie(params[:code])
 

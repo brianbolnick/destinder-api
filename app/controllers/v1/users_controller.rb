@@ -108,7 +108,7 @@ module V1
 
       def find
         @users = []
-        User.where("display_name ILIKE ?", "%#{ params[:data]}%").each do |x| 
+        User.where("display_name ILIKE ? AND api_membership_type = ?", "%#{ params[:data]}%", current_user.api_membership_type ).each do |x| 
           # TODO: Add logic to retrieve character id
           @users << {
             user_id: x.id,
