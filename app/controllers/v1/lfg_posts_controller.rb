@@ -25,7 +25,10 @@ module V1
         def create
             team = []
             @user = current_user
-            # LfgPost.where(:user_id => current_user.id).destroy_all
+            if Rails.env.production?
+                current_user.lfg_posts.destroy_all if current_user.lfg_posts.any?
+            end
+
             puts params[:checkpoint]
             # "https://www.bungie.net/d1/Platform/Destiny/Stats/AggregateActivityStats/#{user.api_membership_type}/#{user.api_membership_id}/#{c['characterBase']['characterId']}/",
             # https://www.bungie.net/Platform/Destiny2/2/Account/4611686018436268793/Character/2305843009267409658/Stats/AggregateActivityStats/
