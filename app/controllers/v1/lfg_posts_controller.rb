@@ -29,19 +29,8 @@ module V1
                 current_user.lfg_posts.destroy_all if current_user.lfg_posts.any?
             end
 
-            puts params[:checkpoint]
-            # "https://www.bungie.net/d1/Platform/Destiny/Stats/AggregateActivityStats/#{user.api_membership_type}/#{user.api_membership_id}/#{c['characterBase']['characterId']}/",
-            # https://www.bungie.net/Platform/Destiny2/2/Account/4611686018436268793/Character/2305843009267409658/Stats/AggregateActivityStats/
             mode = params[:mode]
-            if params[:checkpoint]
-                if [].include? params[:checkpoint]
-                    # 3879860661 prestige
-                    raid_mode = 3879860661
-                elsif [].include? params[:checkpoint]
-                    # 2693136605 normal
-                    raid_mode = 2693136605
-                end            
-            end
+
             if !params[:fireteam].nil?
                 is_fireteam_post = params[:fireteam].any?
                 params[:fireteam].each do |player|
@@ -54,11 +43,11 @@ module V1
                     end
                     
                     if !last_character.nil?
-                        player_stats = LfgPost.get_character_stats(user, last_character, mode)
+                        player_stats = LfgPost.get_character_stats(user, last_character, mode, params[:checkpoint])
                         char_data = user.character_data.find { |char| char[0] == last_character }
                     else 
+                        player_stats = LfgPost.get_character_stats(user, params[:character_id], mode, params[:checkpoint])
                         char_data = @user.character_data.find { |char| char[0] == params[:character_id] }
-                        player_stats = LfgPost.get_character_stats(user, last_character, params[:character_id])
                     end
                     team << {
                         player_name: user.display_name,
@@ -72,7 +61,7 @@ module V1
             end
 
                
-            player_data = LfgPost.get_character_stats(@user, params[:character_id], mode)
+            player_data = LfgPost.get_character_stats(@user, params[:character_id], mode, params[:checkpoint])
             character_data = @user.character_data.find { |char| char[0] == params[:character_id] }
 
             @lfg_post = @user.lfg_posts.build(
@@ -86,7 +75,8 @@ module V1
                 looking_for: params[:looking_for],
                 game_type: mode,
                 character_data: character_data.second.to_json,
-                platform: @user.api_membership_type
+                platform: @user.api_membership_type,
+                checkpoint: params[:checkpoint]
             )
 
         

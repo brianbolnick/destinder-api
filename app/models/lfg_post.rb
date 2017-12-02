@@ -1,9 +1,8 @@
 class LfgPost < ApplicationRecord
     belongs_to :user
 
-    def self.get_character_stats(user, character_id, mode)
-        # hydra = Typhoeus::Hydra.hydra
-    
+    def self.get_character_stats(user, character_id, mode, checkpoint)
+
         badges = user.badges
         votes_for = user.votes_for
         votes_against = user.votes_against
@@ -32,6 +31,24 @@ class LfgPost < ApplicationRecord
 
         if [100, 101, 102].include? mode
             return @character_stats.to_json
+        elsif !checkpoint.nil?            
+            if [1, 2 , 3, 4, 5, 6].include? checkpoint
+                if mode == 4
+                    return get_raid_stats(user, character_id, @character_stats, game_hashes = %w(
+                        2693136601 2693136600 2693136603 
+                        2693136602 2693136604 2693136605 
+                        3916343513 4039317196 89727599 
+                        287649202
+                    ))
+                end
+            elsif [11, 12, 13, 14, 15, 16].include? checkpoint
+                if mode == 4
+                    return get_raid_stats(user, character_id, @character_stats, game_hashes = %w(
+                        3879860661 2449714930 3446541099
+                        417231112 757116822 1685065161
+                    ))
+                end 
+            end            
         else
     
             begin
@@ -63,7 +80,6 @@ class LfgPost < ApplicationRecord
                         "total_votes": total_votes,
                         "kd_ratio": stats["killsDeathsRatio"]["basic"]["displayValue"],
                         "kad_ratio": stats["killsDeathsAssists"]["basic"]["displayValue"],
-                        # "win_rate": !stats["winLossRatio"].nil? ? stats["winLossRatio"]["basic"]["displayValue"] : 0,
                         "win_rate": win_rate,
                         "elo": get_elo(user.api_membership_type, user.api_membership_id.to_s),
                         "kills": stats["kills"]["basic"]["displayValue"],
@@ -84,13 +100,11 @@ class LfgPost < ApplicationRecord
                 Rails.logger.error e
             end
         end
-
-        
         
         puts @character_stats.to_json
         @character_stats.to_json
 
-end    
+    end    
 
     def self.get_elo(membership_type, membership_id)
         elo = 1200
@@ -132,5 +146,89 @@ end
 
         @last_character
 
+    end
+
+    def self.get_raid_stats(user, character_id, character_stats, game_hashes)
+        @character_stats = character_stats
+        badges = user.badges
+        votes_for = user.votes_for
+        votes_against = user.votes_against
+        total_votes = votes_against + votes_for
+        rep = total_votes > 0 ? (votes_for.to_f / total_votes.to_f).round(2) * 100 : 100
+        
+        begin
+            response = Typhoeus.get(
+                "https://www.bungie.net/Platform/Destiny2/#{user.api_membership_type}/Account/#{user.api_membership_id}/Character/#{character_id}/Stats/AggregateActivityStats/",
+                # "https://www.bungie.net/Platform/Destiny2/2/Account/4611686018428388122/Character/2305843009260593955/Stats/AggregateActivityStats/",
+                headers: {"x-api-key" => ENV['API_TOKEN']}
+            )
+                    
+            stat_data = JSON.parse(response.body)
+            if stat_data["Response"]["activities"] != {} 
+            
+                stats = stat_data["Response"]["activities"]
+
+                kd_ratio = 0
+                kad_ratio = 0
+                kills = 0
+                deaths = 0
+                deaths = 0
+                assists = 0
+                assists = 0
+                completions = 0
+                games_played = 0
+                average_lifespan = ""
+                fastest = ""
+                fastest_time = "N/A"
+                game_hashes.each do |x|
+                    find_current = stats.find { |activity| activity["activityHash"] == x.to_i }
+                    next if find_current.nil?
+                    current_activity = find_current["values"]
+                    kd_ratio += current_activity["activityKillsDeathsRatio"]["basic"]["value"] #TODO: calculate average
+                    kad_ratio += current_activity["activityKillsDeathsAssists"]["basic"]["value"] #TODO: calculate average
+                    kills += current_activity["activityKills"]["basic"]["value"]
+                    deaths += current_activity["activityDeaths"]["basic"]["value"]
+                    deaths += current_activity["activityDeaths"]["basic"]["value"]
+                    assists += current_activity["activityAssists"]["basic"]["value"]
+                    assists += current_activity["activityAssists"]["basic"]["value"]
+                    completions += current_activity["activityCompletions"]["basic"]["value"]
+                    
+                    if !current_activity["fastestCompletionMsForActivity"].nil?
+                        if fastest == ""
+                            fastest = current_activity["fastestCompletionMsForActivity"]["basic"]["value"] 
+                            fastest_time = Time.at(fastest / 1000).utc.strftime("%H:%M:%S")                           
+                        elsif fastest < current_activity["fastestCompletionMsForActivity"]["basic"]["value"] 
+                            fastest = current_activity["fastestCompletionMsForActivity"]["basic"]["value"]
+                            fastest_time = Time.at(fastest / 1000).utc.strftime("%H:%M:%S")
+                        end                        
+                    end
+                                      
+                    @character_stats = {
+                        "player_name": user.display_name,
+                        "reputation": rep,
+                        "total_votes": total_votes,
+                        "kd_ratio": kd_ratio,
+                        "kad_ratio": kad_ratio,
+                        "win_rate": 0,
+                        "elo": 0,
+                        "kills": kills,
+                        "deaths": deaths,
+                        "assists": assists,
+                        "completions": completions,
+                        "fastest_completion": fastest_time,
+                        "games_played": games_played,
+                        "average_lifespan": average_lifespan,
+                        "kill_stats": {},
+                        "items": (),
+                        "player_badges": user.badges
+                    }
+                end                
+            end
+            
+        rescue StandardError => e            
+            Rails.logger.error e
+        end
+        
+        @character_stats.to_json
     end
 end
