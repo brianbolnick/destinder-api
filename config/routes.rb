@@ -21,6 +21,8 @@ Rails.application.routes.draw do
   namespace :v1 do 
     get 'users/find(/:data)', to: "users#find"
     get 'validate_player(/:data)', to: 'fireteams#validate_player'
+    get 'fireteams/:platform/:player_name', to: 'fireteams#team'
+    
     resources :users do
       put 'upvote', to: 'users#upvote'
       put 'downvote', to: 'users#downvote'

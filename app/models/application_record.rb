@@ -14,4 +14,8 @@ class ApplicationRecord < ActiveRecord::Base
     Rails.logger.error %(Failed to get #{type} stats with
                         args #{args.inspect}).squish
   end
+
+  def api_get(url)
+    Typhoeus::Request.get(url, method: :get, headers: { 'x-api-key' => ENV['API_TOKEN'] })
+  end
 end

@@ -23,7 +23,7 @@ default: &default
 
 development:
   <<: *default
-  database: destinder-api_development
+  database: destinder-api_development1
 
   # The specified database role being used to connect to postgres.
   # To create additional roles in postgres see `$ createuser --help`.
@@ -57,7 +57,7 @@ development:
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: destinder-api_test
+  database: destinder-api_test1
 
 # As with config/secrets.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -80,6 +80,6 @@ test:
 #
 production:
   <<: *default
-  database: destinder-api_production
+  database: destinder-api_production1
   username: destinder-api
   password: <%= ENV['DESTINDER-API_DATABASE_PASSWORD'] %>
