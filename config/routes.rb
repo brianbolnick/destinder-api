@@ -22,6 +22,7 @@ Rails.application.routes.draw do
     get 'users/find(/:data)', to: "users#find"
     get 'validate_player(/:data)', to: 'fireteams#validate_player'
     get 'fireteams/:platform/:player_name', to: 'fireteams#team'
+    get 'fireteams/stats/:platform/:membership_id', to: 'fireteams#stats'
     
     resources :users do
       put 'upvote', to: 'users#upvote'
