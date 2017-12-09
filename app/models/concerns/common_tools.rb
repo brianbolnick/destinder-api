@@ -24,12 +24,13 @@ module CommonTools
           subclass_name = SUBCLASSES[subclass_item['itemHash'].to_s]
     
           character_data[id] = {
-            "character_type": type,
-            "subclass": subclass_name,
-            "light_level": light,
-            "emblem": "https://www.bungie.net#{emblem}",
-            "emblem_background": "https://www.bungie.net#{bg}",
-            "last_login": last_played              
+            character_type: type,
+            subclass: subclass_name,
+            light_level: light,
+            emblem: "https://www.bungie.net#{emblem}",
+            emblem_background: "https://www.bungie.net#{bg}",
+            last_login: last_played,
+            items: {}             
           }
         end
         user.character_data =  character_data
@@ -39,33 +40,24 @@ module CommonTools
     def self.fetch_character_stats(membership_id, type, character_id, mode)
         
         @character_stats = {
-            "kd_ratio": 0,
-            "kad_ratio": 0,
-            "win_rate": 0,
-            "elo": 0,
-            "kills": 0,
-            "deaths": 0,
-            "assists": 0,
-            "completions": 0,
-            "fastest_completion": "-",
-            "games_played": 0,
-            "average_lifespan": "-",
-            "kill_stats": {},
-            "items": {},
-            "player_badges": {}
+            kd_ratio: 0,
+            kad_ratio: 0,
+            win_rate: 0,
+            efficiency: 0,
+            elo: 0,
+            kills: 0,
+            deaths: 0,
+            assists: 0,
+            completions: 0,
+            fastest_completion: "-",
+            games_played: 0,
+            average_lifespan: "-",
+            kill_stats: {}
         }
-
-        
-    
         begin
         
-            response = Typhoeus.get(
-                # "https://www.bungie.net/Platform/Destiny2/1/Account/4611686018439345596/Character/2305843009260359587/Stats/?modes=#{mode}",
-                "https://www.bungie.net/Platform/Destiny2/#{type}/Account/#{membership_id}/Character/#{character_id}/Stats/?modes=#{mode}",
-                headers: {"x-api-key" => ENV['API_TOKEN']}
-            )
-        
-            
+            response = api_get( "https://www.bungie.net/Platform/Destiny2/#{type}/Account/#{membership_id}/Character/#{character_id}/Stats/?modes=#{mode}")
+                    
             stat_data = JSON.parse(response.body)
             if stat_data["Response"][GAME_MODES[mode.to_i]] != {} 
             
@@ -79,23 +71,54 @@ module CommonTools
                     ms = stats["fastestCompletionMs"]["basic"]["value"]
                     fastest = Time.at(ms / 1000).utc.strftime("%H:%M:%S")
                 end 
+
+                if !stats["efficiency"].nil?
+                    efficiency = stats["efficiency"]
+                end 
                 
                 @character_stats = {
-                    "kd_ratio": stats["killsDeathsRatio"]["basic"]["displayValue"],
-                    "kad_ratio": stats["killsDeathsAssists"]["basic"]["displayValue"],
-                    "win_rate": win_rate,
-                    "elo": get_elo(type, membership_id.to_s),
-                    "kills": stats["kills"]["basic"]["displayValue"],
-                    "deaths": stats["deaths"]["basic"]["displayValue"],
-                    "assists": stats["assists"]["basic"]["displayValue"],
-                    "completions": !stats["activitiesCleared"].nil? ? stats["activitiesCleared"]["basic"]["displayValue"] : 0,
-                    "fastest_completion": fastest,
-                    "games_played": stats["activitiesEntered"]["basic"]["displayValue"],
-                    "average_lifespan": stats["averageLifespan"]["basic"]["displayValue"],
-                    "kill_stats": {},
-                    "items": (),
-                    "player_badges": {}
-
+                    kd_ratio: stats["killsDeathsRatio"]["basic"]["displayValue"],
+                    kad_ratio: stats["killsDeathsAssists"]["basic"]["displayValue"],
+                    win_rate: win_rate,
+                    elo: get_elo(type, membership_id.to_s),
+                    kills: stats["kills"]["basic"]["displayValue"],
+                    deaths: stats["deaths"]["basic"]["displayValue"],
+                    efficiency: efficiency,
+                    assists: stats["assists"]["basic"]["displayValue"],
+                    completions: !stats["activitiesCleared"].nil? ? stats["activitiesCleared"]["basic"]["displayValue"] : 0,
+                    fastest_completion: fastest,
+                    games_played: stats["activitiesEntered"]["basic"]["displayValue"],
+                    average_lifespan: stats["averageLifespan"]["basic"]["displayValue"],
+                    kill_stats: {
+                        auto_rifle: stats["weaponKillsAutoRifle"]["basic"]["displayValue"],
+                        fusion_rifle: stats["weaponKillsFusionRifle"]["basic"]["displayValue"],
+                        hand_cannon: stats["weaponKillsHandCannon"]["basic"]["displayValue"],
+                        trace_rifle: stats["weaponKillsTraceRifle"]["basic"]["displayValue"],
+                        pulse_rifle: stats["weaponKillsPulseRifle"]["basic"]["displayValue"],
+                        rocket_launcher: stats["weaponKillsRocketLauncher"]["basic"]["displayValue"],
+                        scout_rifle: stats["weaponKillsScoutRifle"]["basic"]["displayValue"],
+                        shotgun: stats["weaponKillsShotgun"]["basic"]["displayValue"],
+                        sniper: stats["weaponKillsSniper"]["basic"]["displayValue"],
+                        sub_machine_gun: stats["weaponKillsSubmachinegun"]["basic"]["displayValue"],
+                        side_arm: stats[ "weaponKillsSideArm"]["basic"]["displayValue"],
+                        sword: stats["weaponKillsSword"]["basic"]["displayValue"],
+                        grenades: stats["weaponKillsGrenade"]["basic"]["displayValue"],
+                        grenade_launcher: stats["weaponKillsGrenadeLauncher"]["basic"]["displayValue"],
+                        ability: stats[ "weaponKillsAbility"]["basic"]["displayValue"],
+                        super: stats[ "weaponKillsSuper"]["basic"]["displayValue"],
+                        meleee: stats[ "weaponKillsMelee"]["basic"]["displayValue"],
+                        longest_spree: stats["longestKillSpree"]["basic"]["displayValue"],
+                        best_weapon_type: stats["weaponBestType"]["basic"]["displayValue"],
+                        longest_life: stats["longestSingleLife"]["basic"]["displayValue"],
+                        revives_received: stats["resurrectionsReceived"]["basic"]["displayValue"],
+                        revives_performed: stats["resurrectionsPerformed"]["basic"]["displayValue"],
+                        precision_kills: stats["precisionKills"]["basic"]["displayValue"],
+                        average_life_span: stats["averageLifespan"]["basic"]["displayValue"],
+                        average_kill_distance: stats["averageKillDistance"]["basic"]["displayValue"],
+                        average_death_distance: stats["averageDeathDistance"]["basic"]["displayValue"],
+                        total_activity_time: stats["totalActivityDurationSeconds"]["basic"]["displayValue"],
+                        best_single_game_kills: stats["mostPrecisionKills"]["basic"]["displayValue"]
+                    }
                 }
             end
             

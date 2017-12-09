@@ -34,4 +34,21 @@ module CommonConstants
       38 => 'countdown',
       39 => 'trialsofthenine'
     }.freeze
+
+    ITEM_TYPES = {
+      1498876634 => "primary_weapon_1",
+      2465295065 => "primary_weapon_2",
+      953998645 => "power_weapon",
+      3448274439 => "helmet",
+      3551918588 => "gauntlets",
+      14239492 => "chest_armor",
+      20886954 => "leg_armor",
+      1585787867 => "class_item",
+      # "4023194814" => "shell",
+      # "284967655" => "ship",
+      3284755031 => "subclass",
+      # "4274335291" => "emblem",
+      # "3054419239" => "emote", 
+      1269569095 => "aura"
+  }.freeze 
 end
