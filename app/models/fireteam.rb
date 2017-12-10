@@ -81,99 +81,112 @@ class Fireteam < ApplicationRecord
 
     def self.get_player_stats(mem_type, mem_id)
         hydra = Typhoeus::Hydra.hydra
-        @character_response = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{mem_type}/Profile/#{mem_id}/?components=Characters,205")
-        @characters_data = JSON.parse(@character_response.body)
+        character_response = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{mem_type}/Profile/#{mem_id}/?components=Characters,205")
+        characters_data = JSON.parse(character_response.body)
         character_data = {}
-        @characters = []
+        characters = []
 
+        last_character = characters_data['Response']['characters']['data'].first[0]
+        last_played = characters_data['Response']['characters']['data'].first[1]["dateLastPlayed"]
  
-            @characters_data["Response"]["characters"]["data"].each do |char|
-                begin
-                    id = char[0]
-                    light = char[1]['light']
-                    last_played = char[1]['dateLastPlayed']
-                    type = CHARACTER_CLASSES[char[1]['classType']]
-                    emblem = char[1]['emblemPath']
-                    bg = char[1]['emblemBackgroundPath']
-                    items = @characters_data['Response']['characterEquipment']['data'][id]['items']
-                    subclass_item = items.find { |item| item['bucketHash'] == 3284755031 }
-                    subclass_name = SUBCLASSES[subclass_item['itemHash'].to_s]
-                    @items = Hash.new
+        characters_data["Response"]["characters"]["data"].each do |char|
+            begin
+                id = char[0]
+                light = char[1]['light']
+                # last_played = char[1]['dateLastPlayed']
 
-                    
-                    @characters_data["Response"]["characterEquipment"]["data"][id]["items"].each do |item|
-                        get_items = Typhoeus::Request.new(
-                        # "https://www.bungie.net/d1/Platform/Destiny/Manifest/InventoryItem/#{item["itemHash"]}/",
-                        "https://www.bungie.net/Platform/Destiny2/Manifest/DestinyInventoryItemDefinition/#{item["itemHash"]}/",
-                        method: :get,
-                        headers: {"x-api-key" => ENV['API_TOKEN']}
-                        )
-            
-                        get_items.on_complete do |item_response| 
-                            begin
-                                item_data = JSON.parse(item_response.body) 
-                                icon = "https://www.bungie.net#{item_data["Response"]["displayProperties"]["icon"]}"
-                                name = item_data["Response"]["displayProperties"]["name"]                  
-                                tier = item_data["Response"]["inventory"]["tierTypeName"]
-                                type = item_data["Response"]["itemTypeDisplayName"]
-                                bucket_hash = item_data["Response"]["inventory"]["bucketTypeHash"]
-                                
-                                item = {
-                                    "item_icon" => icon,
-                                    "item_name" => name,
-                                    "item_tier" => tier,
-                                    "item_type" => type
-                                }
-                                if !ITEM_TYPES[bucket_hash].nil?
-                                    @items[ITEM_TYPES[bucket_hash]] = item
-                                else 
-                                    next
-                                end
-                            rescue StandardError => e
-                                item = {
-                                    "item_icon" => "",
-                                    "item_name" => "",
-                                    "item_tier" => "",
-                                    "item_type" => ""
-                                }
+                if !char[1]["dateLastPlayed"].nil?  && (Time.parse(char[1]["dateLastPlayed"]) > Time.parse(last_played))
+                    last_played = char[1]["dateLastPlayed"]
+                    last_character = char[0]
+                end
+
+                type = CHARACTER_CLASSES[char[1]['classType']]
+                emblem = char[1]['emblemPath']
+                bg = char[1]['emblemBackgroundPath']
+                character_items = characters_data['Response']['characterEquipment']['data'][id]['items']
+                subclass_item = character_items.find { |item| item['bucketHash'] == 3284755031 }
+                subclass_name = SUBCLASSES[subclass_item['itemHash'].to_s]
+                items = Hash.new
+
+                
+                character_items.each do |item|
+                    get_items = Typhoeus::Request.new(
+                    # "https://www.bungie.net/d1/Platform/Destiny/Manifest/InventoryItem/#{item["itemHash"]}/",
+                    "https://www.bungie.net/Platform/Destiny2/Manifest/DestinyInventoryItemDefinition/#{item["itemHash"]}/",
+                    method: :get,
+                    headers: {"x-api-key" => ENV['API_TOKEN']}
+                    )
+        
+                    get_items.on_complete do |item_response| 
+                        begin
+                            item_data = JSON.parse(item_response.body) 
+                            icon = "https://www.bungie.net#{item_data["Response"]["displayProperties"]["icon"]}"
+                            name = item_data["Response"]["displayProperties"]["name"]                  
+                            tier = item_data["Response"]["inventory"]["tierTypeName"]
+                            type = item_data["Response"]["itemTypeDisplayName"]
+                            bucket_hash = item_data["Response"]["inventory"]["bucketTypeHash"]
+                            
+                            item = {
+                                "item_icon" => icon,
+                                "item_name" => name,
+                                "item_tier" => tier,
+                                "item_type" => type
+                            }
+                            if !ITEM_TYPES[bucket_hash].nil?
+                                items[ITEM_TYPES[bucket_hash]] = item
+                            else 
                                 next
                             end
+                        rescue StandardError => e
+                            item = {
+                                "item_icon" => "",
+                                "item_name" => "",
+                                "item_tier" => "",
+                                "item_type" => ""
+                            }
+                            next
                         end
-                        
-                        hydra.queue(get_items)
-
-            
-            
                     end
-                
-                    hydra.run
-                    @characters << {
-                        character_data: {
-                            character_id: id,
-                            character_type: type,
-                            subclass: subclass_name,
-                            light_level: light,
-                            emblem: "https://www.bungie.net#{emblem}",
-                            emblem_background: "https://www.bungie.net#{bg}",
-                            last_login: last_played,
-                            items: @items            
-                        },
-                        player_data: {
-                            stats: CommonTools.fetch_character_stats(mem_id, mem_type, id, 39)
-                        },
-                        recent_games: "recent games"
-                    }
-                rescue StandardError => e
-                    puts "---------------------------------------------------"
-                    puts e
-                    puts e.backtrace
-                    puts "---------------------------------------------------"
-                    next
-                end
-                
-            end
+                    
+                    hydra.queue(get_items)
 
-        @characters.to_json
+        
+        
+                end
+            
+                hydra.run
+                characters << {
+                    character_data: {
+                        character_id: id,
+                        character_type: type,
+                        subclass: subclass_name,
+                        light_level: light,
+                        emblem: "https://www.bungie.net#{emblem}",
+                        emblem_background: "https://www.bungie.net#{bg}",
+                        last_login: last_played,
+                        items: items            
+                    },
+                    player_data: {
+                        stats: CommonTools.fetch_character_stats(mem_id, mem_type, id, 39)
+                    },
+                    recent_games: "recent games"
+                }
+            rescue StandardError => e
+                puts "---------------------------------------------------"
+                puts e
+                puts e.backtrace
+                puts "---------------------------------------------------"
+                next
+            end
+            
+        end
+
+        index = characters.index{|x| x[:character_data][:character_id ] == last_character}
+        if index != 0
+            characters[0], characters[index] = characters[index], characters[0]
+        end
+
+        characters.to_json
     end
 
 end

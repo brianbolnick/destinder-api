@@ -39,11 +39,11 @@ module CommonTools
 
     def self.fetch_character_stats(membership_id, type, character_id, mode)
         
-        @character_stats = {
-            kd_ratio: 0,
-            kad_ratio: 0,
-            win_rate: 0,
-            efficiency: 0,
+        character_stats = {
+            kd_ratio: 0.00,
+            kad_ratio: 0.00,
+            win_rate: 0.00,
+            efficiency: 0.00,
             elo: 0,
             kills: 0,
             deaths: 0,
@@ -76,7 +76,7 @@ module CommonTools
                     efficiency = stats["efficiency"]
                 end 
                 
-                @character_stats = {
+                character_stats = {
                     kd_ratio: stats["killsDeathsRatio"]["basic"]["displayValue"],
                     kad_ratio: stats["killsDeathsAssists"]["basic"]["displayValue"],
                     win_rate: win_rate,
@@ -128,7 +128,7 @@ module CommonTools
         
         
         # puts @character_stats.to_json
-        @character_stats
+        character_stats
 
     end 
     
