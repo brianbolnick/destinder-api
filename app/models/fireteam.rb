@@ -31,7 +31,7 @@ class Fireteam < ApplicationRecord
         @last_character = get_recent_character(membership_id, membership_type)
         # get recent activity
         # https://www.bungie.net/Platform/Destiny2/1/Account/4611686018439345596/Character/2305843009260359587/Stats/Activities/?mode=39&count=15&lc=en
-        @recent_request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{@last_character}/Stats/Activities/?mode=39&count=15")
+        @recent_request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{@last_character}/Stats/Activities/?mode=39&count=15&lc=en")
         @recent_data = JSON.parse(@recent_request.body)
         
         instance_id = @recent_data["Response"]["activities"][0]["activityDetails"]["instanceId"]
@@ -169,7 +169,7 @@ class Fireteam < ApplicationRecord
                     player_data: {
                         stats: CommonTools.fetch_character_stats(mem_id, mem_type, id, 39)
                     },
-                    recent_games: "recent games"
+                    recent_games: get_recent_games(mem_type, mem_id,  id) 
                 }
             rescue StandardError => e
                 puts "---------------------------------------------------"
@@ -187,6 +187,37 @@ class Fireteam < ApplicationRecord
         end
 
         characters.to_json
+    end
+
+      def self.get_recent_games(membership_type, membership_id, character_id)
+        games = []
+        begin
+            # get_recent_games =  CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{character_id}/Stats/Activities/?mode=39&count=15")
+            recent_request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{character_id}/Stats/Activities/?mode=39&count=15")
+            game_data = JSON.parse(recent_request.body)
+            game_data['Response']['activities'].each do |game|
+            game_kills = game['values']['kills']['basic']['value']
+            game_deaths = game['values']['deaths']['basic']['value']
+            game_kd = game['values']['killsDeathsRatio']['basic']['displayValue']
+            game_kad = game['values']['killsDeathsAssists']['basic']['displayValue']
+            game_standing = game['values']['standing']['basic']['value']
+            game_date = game['period']
+
+            game_info = {
+                'kills' => game_kills,
+                'deaths' => game_deaths,
+                'kd_ratio' => game_kd,
+                'kad_ratio' => game_kad,
+                'standing' => game_standing,
+                'game_date' => game_date
+            }
+
+            games << game_info
+            end
+        rescue StandardError => e
+            puts e 
+        end 
+        games
     end
 
 end
