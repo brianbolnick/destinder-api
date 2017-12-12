@@ -43,7 +43,7 @@ class Fireteam < ApplicationRecord
         # @pgcr_data["Response"]["entries"].find {|player| player["values"]["team"]["basic"]["value"] == team }
         @pgcr_data["Response"]["entries"].each do |player| 
             if (player["values"]["team"]["basic"]["value"] == team_id) 
-                has_account = User.where("display_name = ? AND api_membership_type = ?", player["player"]["destinyUserInfo"]["displayName"], membership_type.to_s) == [] ? true : false
+                has_account = User.where("display_name = ? AND api_membership_type = ?", player["player"]["destinyUserInfo"]["displayName"], membership_type.to_s) != [] ? true : false
                 @fireteam << {
                     player_name: player["player"]["destinyUserInfo"]["displayName"],
                     character_id: player["characterId"],
