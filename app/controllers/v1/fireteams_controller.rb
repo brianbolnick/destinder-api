@@ -35,7 +35,13 @@ module V1
         )
                 
         data = JSON.parse(response.body)
-        render json: Fireteam.get_recent_activity(data)
+        fireteam = Fireteam.get_recent_activity(data)
+        team_stats = Fireteam.get_fireteam_stats(fireteam, data)
+        # render json: Fireteam.get_recent_activity(data)
+        render json: [
+          JSON.parse(fireteam),
+          JSON.parse(team_stats)
+        ] 
         # params[:platform]
         # find pgcr of last trials match
       rescue StandardError => e

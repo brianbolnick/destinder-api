@@ -21,6 +21,108 @@ class Fireteam < ApplicationRecord
         is_valid.to_json
     end
 
+    def self.get_fireteam_stats(fireteam, data)
+
+        fireteam = JSON.parse(fireteam)
+        hydra = Typhoeus::Hydra.hydra
+        membership_id = data["Response"][0]["membershipId"]
+        membership_type = data["Response"][0]["membershipType"]
+        characters = []
+        fireteam.each do |x| 
+            characters << x['membership_id']
+        end
+        wins = losses = average_kd = games_played = longest_streak = kills = deaths = streak = 0
+
+        # get recent character
+        # get recent activity
+        # https://www.bungie.net/Platform/Destiny2/1/Account/4611686018439345596/Character/2305843009260359587/Stats/Activities/?mode=39&count=15&lc=en
+        request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/1/Account/4611686018439345596/Character/2305843009260359587/Stats/Activities/?mode=39")
+        # request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{@last_character}/Stats/Activities/?mode=39&count=15&lc=en")
+        request_data = JSON.parse(request.body)        
+
+        request_data["Response"]["activities"].each do |activity|
+
+            instance_id = activity["activityDetails"]["instanceId"]
+            
+            get_pgcr = Typhoeus::Request.new(
+                "https://www.bungie.net/Platform/Destiny2/Stats/PostGameCarnageReport/#{instance_id}/",
+                method: :get,
+                headers: {"x-api-key" => ENV['API_TOKEN']}
+            )
+
+            get_pgcr.on_complete do |pgcr_response| 
+                begin
+                    pgcr_data = JSON.parse(pgcr_response.body)
+                    puts ""
+                    
+                    team_exists = true
+                    characters.each do |player|                        
+                        if pgcr_data["Response"]['entries'].find{|entry| entry['player']['destinyUserInfo']['membershipId'] == player}.nil? 
+                            team_exists = false 
+                            break                         
+                        end
+                    end
+                    
+                    if team_exists 
+                        puts "---------------------------------------------------"                        
+                        puts "team exists, getting stats."
+                        puts "---------------------------------------------------"
+                        
+                        characters.each do |player|                        
+                            data = pgcr_data["Response"]['entries'].find{|entry| entry['player']['destinyUserInfo']['membershipId'] == player} 
+                            puts 
+                            games_played += 1
+                            kills += data["values"]['kills']['basic']['value']   
+                            deaths += data["values"]['deaths']['basic']['value']   
+                            if data["values"]['standing']['basic']['displayValue'] == 'Victory'  
+                                wins += 1 
+                                streak += 1
+                                if streak > longest_streak
+                                    longest_streak = streak
+                                end
+                            else 
+                                streak = 0
+                                losses += 1
+                            end
+                            kd = data["values"]['killsDeathsRatio']['basic']['value']
+                            average_kd = average_kd == 0 ? kd : (average_kd + kd) / 2.0
+
+                        end
+                    else
+                        next
+                    end                     
+
+                    # if all fireteam members are included in the response 
+                        # calculate wins and losses 
+                        # calculate average kd 
+                        # calculate longest streak
+                        # calculate total games played 
+                    # else skip
+                rescue StandardError => e
+                    puts e
+                    next
+                end
+            end
+            
+            hydra.queue(get_pgcr)
+        end
+    
+        hydra.run
+
+        team_stats = {
+            wins: wins,
+            losses: losses,
+            average_kd: average_kd.round(2),
+            games_played: games_played,
+            longest_streak: longest_streak,
+            kills: kills,
+            deaths: deaths, 
+            win_rate: ((wins.to_f / games_played.to_f) * 100).round 
+        }
+
+        team_stats.to_json
+    end
+
     def self.get_recent_activity(data)
 
         @fireteam = []
@@ -57,7 +159,6 @@ class Fireteam < ApplicationRecord
 
         # character_data = @user.character_data.find { |char| char[0] == params[:character_id] }
         
-    
         # get pgcr
         @fireteam.to_json
     end
