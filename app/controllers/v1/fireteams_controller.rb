@@ -38,13 +38,17 @@ module V1
         fireteam = Fireteam.get_recent_activity(data)
         team_stats = Fireteam.get_fireteam_stats(fireteam, data)
         # render json: Fireteam.get_recent_activity(data)
+        fireteam = fireteam.nil? ? [] : JSON.parse(fireteam)
+        team_stats = team_stats.nil? ? [] : JSON.parse(team_stats)
         render json: [
-          JSON.parse(fireteam),
-          JSON.parse(team_stats)
+          fireteam,
+          team_stats
         ] 
         # params[:platform]
         # find pgcr of last trials match
       rescue StandardError => e
+        puts e
+        puts e.backtrace
         render json: {error: e}
       end
 

@@ -91,13 +91,6 @@ class Fireteam < ApplicationRecord
                     else
                         next
                     end                     
-
-                    # if all fireteam members are included in the response 
-                        # calculate wins and losses 
-                        # calculate average kd 
-                        # calculate longest streak
-                        # calculate total games played 
-                    # else skip
                 rescue StandardError => e
                     puts e
                     next
@@ -117,7 +110,7 @@ class Fireteam < ApplicationRecord
             longest_streak: longest_streak,
             kills: kills,
             deaths: deaths, 
-            win_rate: ((wins.to_f / games_played.to_f) * 100).round 
+            win_rate: games_played != 0 ? ((wins.to_f / games_played.to_f) * 100).round : 0
         }
 
         team_stats.to_json
@@ -125,28 +118,28 @@ class Fireteam < ApplicationRecord
 
     def self.get_recent_activity(data)
 
-        @fireteam = []
+        fireteam = []
         
         membership_id = data["Response"][0]["membershipId"]
         membership_type = data["Response"][0]["membershipType"]
         # get recent character
-        @last_character = get_recent_character(membership_id, membership_type)
+        last_character = get_recent_character(membership_id, membership_type)
         # get recent activity
         # https://www.bungie.net/Platform/Destiny2/1/Account/4611686018439345596/Character/2305843009260359587/Stats/Activities/?mode=39&count=15&lc=en
-        @recent_request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{@last_character}/Stats/Activities/?mode=39&count=15&lc=en")
-        @recent_data = JSON.parse(@recent_request.body)
+        recent_request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{last_character}/Stats/Activities/?mode=39&count=15&lc=en")
+        recent_data = JSON.parse(recent_request.body)
         
-        instance_id = @recent_data["Response"]["activities"][0]["activityDetails"]["instanceId"]
-        team_id = @recent_data["Response"]["activities"][0]["values"]["team"]["basic"]["value"]
+        instance_id = recent_data["Response"]["activities"][0]["activityDetails"]["instanceId"]
+        team_id = recent_data["Response"]["activities"][0]["values"]["team"]["basic"]["value"]
         
-        @pgcr = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/Stats/PostGameCarnageReport/#{instance_id}/")
-        @pgcr_data = JSON.parse(@pgcr.body)
+        pgcr = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/Stats/PostGameCarnageReport/#{instance_id}/")
+        pgcr_data = JSON.parse(pgcr.body)
 
         # @pgcr_data["Response"]["entries"].find {|player| player["values"]["team"]["basic"]["value"] == team }
-        @pgcr_data["Response"]["entries"].each do |player| 
+        pgcr_data["Response"]["entries"].each do |player| 
             if (player["values"]["team"]["basic"]["value"] == team_id) 
                 has_account = User.where("display_name = ? AND api_membership_type = ?", player["player"]["destinyUserInfo"]["displayName"], membership_type.to_s) != [] ? true : false
-                @fireteam << {
+                fireteam << {
                     player_name: player["player"]["destinyUserInfo"]["displayName"],
                     character_id: player["characterId"],
                     membership_type: player["player"]["destinyUserInfo"]["membershipType"],
@@ -160,7 +153,7 @@ class Fireteam < ApplicationRecord
         # character_data = @user.character_data.find { |char| char[0] == params[:character_id] }
         
         # get pgcr
-        @fireteam.to_json
+        fireteam.to_json
     end
 
     def self.get_recent_character(id, type)
