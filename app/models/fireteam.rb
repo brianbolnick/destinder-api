@@ -52,9 +52,7 @@ class Fireteam < ApplicationRecord
 
             get_pgcr.on_complete do |pgcr_response| 
                 begin
-                    pgcr_data = JSON.parse(pgcr_response.body)
-                    puts ""
-                    
+                    pgcr_data = JSON.parse(pgcr_response.body)                    
                     team_exists = true
                     characters.each do |player|                        
                         if pgcr_data["Response"]['entries'].find{|entry| entry['player']['destinyUserInfo']['membershipId'] == player}.nil? 
@@ -64,10 +62,6 @@ class Fireteam < ApplicationRecord
                     end
                     
                     if team_exists 
-                        puts "---------------------------------------------------"                        
-                        puts "team exists, getting stats."
-                        puts "---------------------------------------------------"
-                        
                         characters.each do |player|                        
                             data = pgcr_data["Response"]['entries'].find{|entry| entry['player']['destinyUserInfo']['membershipId'] == player} 
                             puts 
@@ -138,7 +132,6 @@ class Fireteam < ApplicationRecord
         pgcr_data["Response"]["entries"].each do |player| 
             if (player["values"]["team"]["basic"]["value"] == team_id) 
                 acct = User.where("display_name = ? AND api_membership_type = ?", player["player"]["destinyUserInfo"]["displayName"], membership_type.to_s).first
-
                 has_account = !acct.nil? ? true : false
                 if has_account 
                     votes_for = acct.votes_for
@@ -304,7 +297,7 @@ class Fireteam < ApplicationRecord
         characters.to_json
     end
 
-      def self.get_recent_games(membership_type, membership_id, character_id)
+    def self.get_recent_games(membership_type, membership_id, character_id)
         games = []
         begin
             # get_recent_games =  CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{character_id}/Stats/Activities/?mode=39&count=15")
