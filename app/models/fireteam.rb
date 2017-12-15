@@ -135,16 +135,37 @@ class Fireteam < ApplicationRecord
         pgcr = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/Stats/PostGameCarnageReport/#{instance_id}/")
         pgcr_data = JSON.parse(pgcr.body)
 
-        # @pgcr_data["Response"]["entries"].find {|player| player["values"]["team"]["basic"]["value"] == team }
         pgcr_data["Response"]["entries"].each do |player| 
             if (player["values"]["team"]["basic"]["value"] == team_id) 
-                has_account = User.where("display_name = ? AND api_membership_type = ?", player["player"]["destinyUserInfo"]["displayName"], membership_type.to_s) != [] ? true : false
+                acct = User.where("display_name = ? AND api_membership_type = ?", player["player"]["destinyUserInfo"]["displayName"], membership_type.to_s).first
+
+                has_account = !acct.nil? ? true : false
+                if has_account 
+                    votes_for = acct.votes_for
+                    votes_against = acct.votes_against
+                    total_votes = votes_against + votes_for
+                    rep = total_votes > 0 ? (votes_for.to_f / total_votes.to_f).round(2) * 100 : 100
+                    account_info = {
+                        badges: acct.badges, 
+                        reputation: {
+                            votes_for: votes_for,
+                            votes_against: votes_against,
+                            total_votes: total_votes,
+                            reputation_score: rep
+                        } 
+                    }
+                else
+                    account_info = {}
+                end
+
                 fireteam << {
                     player_name: player["player"]["destinyUserInfo"]["displayName"],
                     character_id: player["characterId"],
+                    emblem: "https://www.bungie.net#{player["player"]["destinyUserInfo"]['iconPath']}",
                     membership_type: player["player"]["destinyUserInfo"]["membershipType"],
                     membership_id: player["player"]["destinyUserInfo"]["membershipId"],
-                    has_account: has_account                               
+                    has_account: has_account,
+                    account_info: account_info                               
                 }
             end
         end
