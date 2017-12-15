@@ -49,7 +49,7 @@ module V1
       rescue StandardError => e
         puts e
         puts e.backtrace
-        render json: {error: e}
+        render json: { error: e }
       end
 
 

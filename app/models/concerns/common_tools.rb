@@ -73,7 +73,7 @@ module CommonTools
                 end 
 
                 if !stats["efficiency"].nil?
-                    efficiency = stats["efficiency"]
+                    efficiency = stats["efficiency"]["basic"]["displayValue"]
                 end 
                 
                 character_stats = {

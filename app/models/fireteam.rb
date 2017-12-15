@@ -36,8 +36,8 @@ class Fireteam < ApplicationRecord
         # get recent character
         # get recent activity
         # https://www.bungie.net/Platform/Destiny2/1/Account/4611686018439345596/Character/2305843009260359587/Stats/Activities/?mode=39&count=15&lc=en
-        request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/1/Account/4611686018439345596/Character/2305843009260359587/Stats/Activities/?mode=39")
-        # request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{@last_character}/Stats/Activities/?mode=39&count=15&lc=en")
+        # request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/1/Account/4611686018439345596/Character/2305843009260359587/Stats/Activities/?mode=39")
+        request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{@last_character}/Stats/Activities/?mode=39&count=15&lc=en")
         request_data = JSON.parse(request.body)        
 
         request_data["Response"]["activities"].each do |activity|
@@ -198,7 +198,7 @@ class Fireteam < ApplicationRecord
                 emblem = char[1]['emblemPath']
                 bg = char[1]['emblemBackgroundPath']
                 character_items = characters_data['Response']['characterEquipment']['data'][id]['items']
-                subclass_item = character_items.find { |item| item['bucketHash'] == 3284755031 }
+                subclass_item = character_items.find { |item| item['bucketHash'] == 3284755031  }
                 subclass_name = SUBCLASSES[subclass_item['itemHash'].to_s]
                 items = Hash.new
 
@@ -217,14 +217,14 @@ class Fireteam < ApplicationRecord
                             icon = "https://www.bungie.net#{item_data["Response"]["displayProperties"]["icon"]}"
                             name = item_data["Response"]["displayProperties"]["name"]                  
                             tier = item_data["Response"]["inventory"]["tierTypeName"]
-                            type = item_data["Response"]["itemTypeDisplayName"]
+                            item_type = item_data["Response"]["itemTypeDisplayName"]
                             bucket_hash = item_data["Response"]["inventory"]["bucketTypeHash"]
                             
                             item = {
                                 "item_icon" => icon,
                                 "item_name" => name,
                                 "item_tier" => tier,
-                                "item_type" => type
+                                "item_type" => item_type
                             }
                             if !ITEM_TYPES[bucket_hash].nil?
                                 items[ITEM_TYPES[bucket_hash]] = item
