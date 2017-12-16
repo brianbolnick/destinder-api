@@ -5,15 +5,19 @@ module V1
       
         # GET /lfg_posts
         def index
-            if auth_present?
-                puts current_user.id
-                @lfg_posts = LfgPost.where(:platform => current_user.api_membership_type).order(:created_at)
-            else
-                puts params[:platform]
-                @lfg_posts = LfgPost.where(:platform => params[:platform]).order(:created_at)
+            begin
+                if auth_present?
+                    puts current_user.id
+                    @lfg_posts = LfgPost.where(:platform => current_user.api_membership_type).order(:created_at)
+                else
+                    puts params[:platform]
+                    @lfg_posts = LfgPost.where(:platform => params[:platform]).order(:created_at)
+                end
+                render json: @lfg_posts
+            rescue StandardError => e
+                render json: {error: e}
             end
-        
-          render json: @lfg_posts
+          
         end
       
         # GET /lfg_posts/1
