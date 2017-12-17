@@ -132,7 +132,7 @@ class Fireteam < ApplicationRecord
         pgcr_data["Response"]["entries"].each do |player| 
             if (player["values"]["team"]["basic"]["value"] == team_id) 
                 acct = User.where("display_name = ? AND api_membership_type = ?", player["player"]["destinyUserInfo"]["displayName"], membership_type.to_s).first
-                # acct = User.where("display_name = ? AND api_membership_type = ?", "xBella zio", "1").first
+                # acct = User.where("display_name = ? AND api_membership_type = ?", "Luminusss", "1").first
                 has_account = !acct.nil? ? true : false
                 if has_account 
                     votes_for = acct.votes_for

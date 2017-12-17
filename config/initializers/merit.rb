@@ -111,3 +111,9 @@ Merit::Badge.create!(
     color: 'color: #FAFAFA; background-color: #1DA1F2;'
   }
 )
+
+Merit::Badge.create!(
+  id: 9,
+  name: 'Rainbow',
+  description: 'Major Supporter!',
+)
