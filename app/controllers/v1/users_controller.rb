@@ -68,7 +68,7 @@ module V1
       def upvote
         begin
           if params[:user_id]
-            voteable = User.find_by(id: params[:user_id])
+            voteable = User.find_by(id: params[:user_id].to_i)
             current_user.vote_for(voteable)
             render json: {success: 'Vote cast', data: 'Upvote'}
           end
@@ -80,7 +80,7 @@ module V1
       def downvote
         begin
           if params[:user_id]
-            voteable = User.find_by(id: params[:user_id])
+            voteable = User.find_by(id: params[:user_id].to_i)
             current_user.vote_against(voteable)
             render json: {success: 'Vote cast', data: 'Downvote'}
           end
@@ -92,13 +92,17 @@ module V1
       def unvote
         begin
           if params[:user_id]
-            voteable = User.find_by(id: params[:user_id])
+            voteable = User.find_by(id: params[:user_id].to_i)
             current_user.unvote_for(voteable)
             render json: {success: 'Vote removed', data: 'Removed'}
           end
         rescue StandardError => e
             render json: {failure: e}
         end
+      end
+
+      def voted_for
+        render json: {voted_for: current_user.voted_on?(User.find(params[:user_id].to_i)) }
       end
 
       def badges

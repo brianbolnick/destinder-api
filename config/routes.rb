@@ -28,6 +28,7 @@ Rails.application.routes.draw do
       put 'upvote', to: 'users#upvote'
       put 'downvote', to: 'users#downvote'
       put 'unvote', to: 'users#unvote'
+      get 'voted_for', to: 'users#voted_for'
       get 'badges', to: 'users#badges'
       get 'characters', to: 'users#characters'
       get 'characters/:id', to: 'users#character'
