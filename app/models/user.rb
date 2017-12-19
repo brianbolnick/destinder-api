@@ -2,6 +2,7 @@ class User < ApplicationRecord
   has_merit
 
   has_many :lfg_posts, dependent: :destroy
+  has_many :characters
 
   acts_as_voter     # relationship :votes will be obscured by the same named relationship from acts_as_voteable :(
   acts_as_voteable
