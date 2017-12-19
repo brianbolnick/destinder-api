@@ -20,6 +20,7 @@ module V1
         @user = User.new(user_params)
     
         if @user.save
+          FetchCharacterDataJob.perform_later(@user)
           render json: @user, status: :created, location: @user
         else
           render json: @user.errors, status: :unprocessable_entity

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171219063529) do
+ActiveRecord::Schema.define(version: 20171219074452) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -25,11 +25,25 @@ ActiveRecord::Schema.define(version: 20171219063529) do
     t.index ["sash_id"], name: "index_badges_sashes_on_sash_id"
   end
 
+  create_table "character_details", force: :cascade do |t|
+    t.bigint "character_id"
+    t.string "character_type"
+    t.string "subclass"
+    t.integer "light_level"
+    t.string "emblem"
+    t.string "emblem_background"
+    t.string "last_login"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["character_id"], name: "index_character_details_on_character_id"
+  end
+
   create_table "characters", force: :cascade do |t|
     t.string "character_id"
     t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["character_id"], name: "index_characters_on_character_id", unique: true
     t.index ["user_id"], name: "index_characters_on_user_id"
   end
 
@@ -142,6 +156,7 @@ ActiveRecord::Schema.define(version: 20171219063529) do
     t.index ["voter_type", "voter_id"], name: "index_votes_on_voter_type_and_voter_id"
   end
 
+  add_foreign_key "character_details", "characters"
   add_foreign_key "characters", "users"
   add_foreign_key "lfg_posts", "users"
 end
