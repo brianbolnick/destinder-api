@@ -20,6 +20,14 @@ class AuthenticationController < ApplicationController
     )
 
 
+
+    FetchCharacterDataJob.perform_later(user)
+
+        
+    if user.badges == []
+      user.add_badge(5) if user.id <= 550
+    end
+
     user_info.merge!(user_id: user.id)
 
     # # Generate token...
