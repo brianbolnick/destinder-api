@@ -9,7 +9,6 @@ class User < ApplicationRecord
   serialize :character_data
 
   def get_character_data 
-    puts "in model: #{self}"
     FetchCharacterDataJob.perform_later(self)
   end
 end
