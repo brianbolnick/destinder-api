@@ -114,6 +114,12 @@ Merit::Badge.create!(
 
 Merit::Badge.create!(
   id: 9,
-  name: 'Rainbow',
+  name: 'Dedicated',
   description: 'Major Supporter!',
+)
+
+Merit::Badge.create!(
+  id: 10,
+  name: 'Conjuror',
+  description: 'Referred a friend!',
 )
