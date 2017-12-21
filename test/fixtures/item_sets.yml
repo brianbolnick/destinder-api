@@ -1,0 +1,27 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  character: one
+  kinetic_weapon: MyString
+  energy_weapon: MyString
+  power_weapon: MyString
+  helmet: MyString
+  gauntlets: MyString
+  chest_armor: MyString
+  leg_armor: MyString
+  class_item: MyString
+  subclass: MyString
+  aura: MyString
+
+two:
+  character: two
+  kinetic_weapon: MyString
+  energy_weapon: MyString
+  power_weapon: MyString
+  helmet: MyString
+  gauntlets: MyString
+  chest_armor: MyString
+  leg_armor: MyString
+  class_item: MyString
+  subclass: MyString
+  aura: MyString

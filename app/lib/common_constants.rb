@@ -38,19 +38,19 @@ module CommonConstants
   }.freeze
 
   ITEM_TYPES = {
-    1_498_876_634 => 'primary_weapon_1',
-    2_465_295_065 => 'primary_weapon_2',
-    953_998_645 => 'power_weapon',
-    3_448_274_439 => 'helmet',
-    3_551_918_588 => 'gauntlets',
-    14_239_492 => 'chest_armor',
-    20_886_954 => 'leg_armor',
-    1_585_787_867 => 'class_item',
+    1_498_876_634 => :kinetic_weapon,
+    2_465_295_065 => :energy_weapon,
+    953_998_645 => :power_weapon,
+    3_448_274_439 => :helmet,
+    3_551_918_588 => :gauntlets,
+    14_239_492 => :chest_armor,
+    20_886_954 => :leg_armor,
+    1_585_787_867 => :class_item,
     # "4023194814" => "shell",
     # "284967655" => "ship",
-    3_284_755_031 => 'subclass',
+    3_284_755_031 => :subclass,
     # "4274335291" => "emblem",
     # "3054419239" => "emote",
-    1_269_569_095 => 'aura'
+    1_269_569_095 => :aura
   }.freeze
 end
