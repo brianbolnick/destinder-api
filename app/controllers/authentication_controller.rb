@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 class AuthenticationController < ApplicationController
   def bungie
-    
     authenticator = Authenticator.new
     user_info = authenticator.bungie(params[:code])
 
@@ -9,8 +10,8 @@ class AuthenticationController < ApplicationController
     locale = user_info[:locale]
     membership_id = user_info[:membership_id]
     membership_type = user_info[:membership_type]
-    
-    #create user if it doesn't exist...
+
+    # create user if it doesn't exist...
     user = User.where(display_name: display_name).first_or_create!(
       display_name: display_name,
       profile_picture: profile_picture,
@@ -19,16 +20,13 @@ class AuthenticationController < ApplicationController
       api_membership_type: membership_type
     )
 
-
-
     FetchCharacterDataJob.perform_later(user)
 
-        
     if user.badges == []
       user.add_badge(5) if user.id <= 550
     end
 
-    user_info.merge!(user_id: user.id)
+    user_info[:user_id] = user.id
 
     # # Generate token...
     token = AuthToken.encodeBungie(user_info)

@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
-# Fetch character details
-class FetchCharacterDataJob < ApplicationJob
+class FetchCharacterDetailsJob < ApplicationJob
   queue_as :default
 
-  def perform(user)
+  def perform(mem_id, type, _character, _data)
     # Make our request and get specific character data from it
-    @request ||= api_get("https://www.bungie.net/Platform/Destiny2/#{user.api_membership_type}/Profile/#{user.api_membership_id}/?components=Characters,205")
+    @request ||= api_get("https://www.bungie.net/Platform/Destiny2/#{type}/Profile/#{mem_id}/?components=Characters,205")
     @characters_data ||= JSON.parse(@request.body)
     character_data = {}
 

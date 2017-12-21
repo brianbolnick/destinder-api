@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateLfgPosts < ActiveRecord::Migration[5.1]
   def change
     create_table :lfg_posts do |t|

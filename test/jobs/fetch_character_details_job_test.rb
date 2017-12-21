@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-class FetchPlayerCharactersJobTest < ActiveJob::TestCase
+class FetchCharacterDetailsJobTest < ActiveJob::TestCase
   # test "the truth" do
   #   assert true
   # end

@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
+
 require 'pathname'
 require 'fileutils'
 include FileUtils
@@ -15,7 +17,7 @@ chdir APP_ROOT do
   # Add necessary update steps to this file.\
 
   puts "\n== Fetching latest changes =="
-  system! "git pull --rebase"
+  system! 'git pull --rebase'
 
   puts '== Installing dependencies =='
   system! 'gem install bundler --conservative'

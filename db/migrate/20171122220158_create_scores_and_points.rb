@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateScoresAndPoints < ActiveRecord::Migration[5.1]
   def change
     create_table :merit_scores do |t|

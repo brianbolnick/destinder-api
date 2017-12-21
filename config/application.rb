@@ -1,16 +1,18 @@
+# frozen_string_literal: true
+
 require_relative 'boot'
 
-require "rails"
+require 'rails'
 # Pick the frameworks you want:
-require "active_model/railtie"
-require "active_job/railtie"
-require "active_record/railtie"
-require "action_controller/railtie"
-require "action_mailer/railtie"
-require "action_view/railtie"
-require "action_cable/engine"
+require 'active_model/railtie'
+require 'active_job/railtie'
+require 'active_record/railtie'
+require 'action_controller/railtie'
+require 'action_mailer/railtie'
+require 'action_view/railtie'
+require 'action_cable/engine'
 # require "sprockets/railtie"
-require "rails/test_unit/railtie"
+require 'rails/test_unit/railtie'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -32,28 +34,28 @@ module DestinderApi
 
     config.middleware.use Rack::Attack
 
-    # use delayed job 
+    # use delayed job
     config.active_job.queue_adapter = :delayed_job
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do
         origins 'http://localhost:3000'
-        resource '*', :headers => :any, :methods => [:get, :post, :put, :delete, :options]
+        resource '*', headers: :any, methods: %i[get post put delete options]
       end
 
       allow do
         origins 'http://www.destinder.com'
-        resource '*', :headers => :any, :methods => [:get, :post, :put, :delete, :options]
+        resource '*', headers: :any, methods: %i[get post put delete options]
       end
 
       allow do
         origins 'https://destinder-client-beta.herokuapp.com'
-        resource '*', :headers => :any, :methods => [:get, :post, :put, :delete, :options]
+        resource '*', headers: :any, methods: %i[get post put delete options]
       end
-      
+
       allow do
         origins 'https://www.destinder-client-beta.herokuapp.com'
-        resource '*', :headers => :any, :methods => [:get, :post, :put, :delete, :options]
+        resource '*', headers: :any, methods: %i[get post put delete options]
       end
     end
 

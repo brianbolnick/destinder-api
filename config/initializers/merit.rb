@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Use this hook to configure merit parameters
 Merit.setup do |config|
   # Check rules on each request or in background
@@ -31,8 +33,6 @@ end
 # }].each do |attrs|
 #   Merit::Badge.create! attrs
 # end
-
-
 
 Merit::Badge.create!(
   id: 1,
@@ -115,11 +115,11 @@ Merit::Badge.create!(
 Merit::Badge.create!(
   id: 9,
   name: 'Dedicated',
-  description: 'Major Supporter!',
+  description: 'Major Supporter!'
 )
 
 Merit::Badge.create!(
   id: 10,
   name: 'Conjuror',
-  description: 'Referred a friend !',
+  description: 'Referred a friend !'
 )
