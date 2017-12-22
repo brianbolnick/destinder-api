@@ -3,7 +3,7 @@
 module V1
   class UsersController < ApplicationController
     before_action :set_user, only: %i[show update destroy]
-    before_action :authenticate_user!, only: %i[create update destroy upvote downvote unvote]
+    before_action :authenticate_user!, only: %i[create update destroy upvote downvote unvote logout]
 
     # GET /users
     def index
@@ -38,6 +38,10 @@ module V1
       end
     end
 
+
+    def logout
+      reset_session
+    end
     # # DELETE /users/1
     # def destroy
     #   @user.destroy

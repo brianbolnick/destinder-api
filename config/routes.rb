@@ -27,6 +27,7 @@ Rails.application.routes.draw do
     get 'fireteams/stats/:platform/:membership_id', to: 'fireteams#stats'
 
     resources :users do
+      post 'logout', to: 'users#logout'
       put 'upvote', to: 'users#upvote'
       put 'downvote', to: 'users#downvote'
       put 'unvote', to: 'users#unvote'
