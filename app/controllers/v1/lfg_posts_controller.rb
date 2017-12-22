@@ -8,7 +8,9 @@ module V1
     # GET /lfg_posts
     def index
       if auth_present?
-        puts current_user.id
+        puts "running job"
+
+        FetchCharacterDataJob.perform_later(current_user)
         @lfg_posts = LfgPost.where(platform: current_user.api_membership_type).order(:created_at)
       else
         puts params[:platform]
@@ -28,6 +30,8 @@ module V1
     def create
       team = []
       @user = current_user
+      puts "running job"
+      FetchCharacterDataJob.perform_later(current_user)
       if Rails.env.production?
         current_user.lfg_posts.destroy_all if current_user.lfg_posts.any?
       end

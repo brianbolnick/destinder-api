@@ -8,7 +8,7 @@ class ApplicationRecord < ActiveRecord::Base
     key = "#{type}_#{args.values.join('_')}"
     job = "Fetch#{type.capitalize}StatsJob".constantize
 
-    Rails.cache.fetch(key, expires_in: 10.minutes) do
+    Rails.cache.fetch(key, expires_in: 5.minutes) do
       job.perform_now(args)
     end
   rescue e
