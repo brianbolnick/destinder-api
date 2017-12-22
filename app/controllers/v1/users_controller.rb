@@ -61,7 +61,8 @@ module V1
     def character
       # TODO: Should this ever need to check if data is nil or refresh the data before responding?
       @user = User.find(params[:user_id])
-      @character = @user.character_data.find { |char| char[0] == params[:id] }
+      @character = @user.characters.find_by(character_id: params[:id]).character_details.first
+      
       render json: @character
     end
 

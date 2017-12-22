@@ -150,15 +150,24 @@ class LfgPost < ApplicationRecord
       attempts += 1
     end
 
-    @last_character = user.character_data.first[0]
-    last_played = user.character_data.first[1][:last_login]
+    # @last_character = user.character_data.first[0]
+    @last_character = user.characters.first.character_id
+    last_played = user.characters.first.character_details.first.last_login
 
-    user.character_data.each do |char|
-      if !char[1][:last_login].nil? && (Time.parse(char[1][:last_login]) > Time.parse(last_played))
-        last_played = char[1][:last_login]
-        @last_character = char[0]
+    user.characters.each do |char|
+      if !char.character_details.first.last_login.nil? && (Time.parse(char.character_details.first.last_login) > Time.parse(last_played))
+        last_played = char.character_details.first.last_login
+        @last_character = char.character_id
       end
     end
+
+    # user.character_data.each do |char|
+    #   if !char[1][:last_login].nil? && (Time.parse(char[1][:last_login]) > Time.parse(last_played))
+    #     last_played = char[1][:last_login]
+    #     @last_character = char[0]
+    #   end
+    # end
+    # FetchCharacterDataJob.perform_later(user)
 
     @last_character
   end
