@@ -23,18 +23,23 @@ class FetchCharacterDataJob < ApplicationJob
       subclass_name = SUBCLASSES[subclass_item['itemHash'].to_s]
 
       if !user.characters.find_by(character_id: id)
-        @character = user.characters.build(character_id: id)
-        @character.save!
-        @char_data = @character.character_details.build(
-          character_type: type,
-          subclass: subclass_name,
-          light_level: light,
-          emblem: "https://www.bungie.net#{emblem}",
-          emblem_background: "https://www.bungie.net#{bg}",
-          last_login: last_played
-        )
+        query = Character.find_by(character_id: id)
+        if !query.nil?
+          query.update(user_id: user.id)
+        else
+          @character = user.characters.build(character_id: id)
+          @character.save!
+          @char_data = @character.character_details.build(
+            character_type: type,
+            subclass: subclass_name,
+            light_level: light,
+            emblem: "https://www.bungie.net#{emblem}",
+            emblem_background: "https://www.bungie.net#{bg}",
+            last_login: last_played
+          )
 
-        @char_data.save!
+          @char_data.save!
+        end
       else
         @character = user.characters.find_by(character_id: id)
         if @character.character_details == []
@@ -60,17 +65,17 @@ class FetchCharacterDataJob < ApplicationJob
         end
       end
 
-      character_data[id] = {
-        "character_type": type,
-        "subclass": subclass_name,
-        "light_level": light,
-        "emblem": "https://www.bungie.net#{emblem}",
-        "emblem_background": "https://www.bungie.net#{bg}",
-        "last_login": last_played
-      }
+      # character_data[id] = {
+      #   "character_type": type,
+      #   "subclass": subclass_name,
+      #   "light_level": light,
+      #   "emblem": "https://www.bungie.net#{emblem}",
+      #   "emblem_background": "https://www.bungie.net#{bg}",
+      #   "last_login": last_played
+      # }
 
-      user.character_data = character_data
-      user.save!
+      # user.character_data = character_data
+      # user.save!
     end
   end
 end

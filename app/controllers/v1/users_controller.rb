@@ -45,8 +45,13 @@ module V1
 
     def characters
       @user = User.find_by(id: params[:user_id])
-      @user.get_character_data
-      render json: @user.character_data
+      chars = @user.characters
+      data = {}
+
+      chars.each do |character|
+        data[character.character_id] = character.character_details.first
+      end
+      render json: data.to_h
     end
 
     def character
@@ -90,7 +95,7 @@ module V1
         voteable = User.find_by(id: params[:user_id].to_i)
         current_user.unvote_for(voteable)
         render json: { success: 'Vote removed', data: 'Removed' }
-        end
+      end
     rescue StandardError => e
       render json: { failure: e }
     end

@@ -11,23 +11,24 @@ class LfgPost < ApplicationRecord
     rep = total_votes > 0 ? (votes_for.to_f / total_votes.to_f).round(2) * 100 : 100
 
     @character_stats = {
-      "player_name": user.display_name,
-      "reputation": rep,
-      "total_votes": total_votes,
-      "kd_ratio": 0,
-      "kad_ratio": 0,
-      "win_rate": 0,
-      "elo": 0,
-      "kills": 0,
-      "deaths": 0,
-      "assists": 0,
-      "completions": 0,
-      "fastest_completion": '-',
-      "games_played": 0,
-      "average_lifespan": '-',
-      "kill_stats": {},
-      "items": {},
-      "player_badges": badges
+      player_name: user.display_name,
+      reputation: rep,
+      total_votes: total_votes,
+      kd_ratio: 0,
+      kad_ratio: 0,
+      win_rate: 0,
+      elo: 0,
+      kills: 0,
+      deaths: 0,
+      assists: 0,
+      completions: 0,
+      fastest_completion: '-',
+      games_played: 0,
+      average_lifespan: '-',
+      flawless: 0,
+      kill_stats: {},
+      items: {},
+      player_badges: badges
     }
 
     if [100, 101, 102].include? mode
@@ -73,24 +74,43 @@ class LfgPost < ApplicationRecord
             fastest = Time.at(ms / 1000).utc.strftime('%H:%M:%S')
           end
 
+          flawless = 0
+          if mode == 39
+            flawless_response = Typhoeus.get(
+              "https://www.bungie.net/Platform/Destiny2/#{user.api_membership_type}/Profile/#{user.api_membership_id}/?components=Characters,500",
+              headers: { 'x-api-key' => ENV['API_TOKEN'] }
+            )
+
+            flawless_data = JSON.parse(flawless_response.body)
+            flawless_data = flawless_data['Response']['profileKiosks']['data']['kioskItems']['622587395']
+
+            flawless_data.each do |x|
+              if !x['flavorObjective'].nil? && x['flavorObjective']['objectiveHash'] == 1_973_789_098
+                flawless = x['flavorObjective']['progress']
+                break
+              end
+            end
+          end
+
           @character_stats = {
-            "player_name": user.display_name,
-            "reputation": rep,
-            "total_votes": total_votes,
-            "kd_ratio": stats['killsDeathsRatio']['basic']['displayValue'],
-            "kad_ratio": stats['killsDeathsAssists']['basic']['displayValue'],
-            "win_rate": win_rate,
-            "elo": get_elo(user.api_membership_type, user.api_membership_id.to_s),
-            "kills": stats['kills']['basic']['displayValue'],
-            "deaths": stats['deaths']['basic']['displayValue'],
-            "assists": stats['assists']['basic']['displayValue'],
-            "completions": !stats['activitiesCleared'].nil? ? stats['activitiesCleared']['basic']['displayValue'] : 0,
-            "fastest_completion": fastest,
-            "games_played": stats['activitiesEntered']['basic']['displayValue'],
-            "average_lifespan": stats['averageLifespan']['basic']['displayValue'],
-            "kill_stats": {},
-            "items": (),
-            "player_badges": badges
+            player_name: user.display_name,
+            reputation: rep,
+            total_votes: total_votes,
+            kd_ratio: stats['killsDeathsRatio']['basic']['displayValue'],
+            kad_ratio: stats['killsDeathsAssists']['basic']['displayValue'],
+            win_rate: win_rate,
+            elo: get_elo(user.api_membership_type, user.api_membership_id.to_s),
+            kills: stats['kills']['basic']['displayValue'],
+            deaths: stats['deaths']['basic']['displayValue'],
+            assists: stats['assists']['basic']['displayValue'],
+            completions: !stats['activitiesCleared'].nil? ? stats['activitiesCleared']['basic']['displayValue'] : 0,
+            fastest_completion: fastest,
+            games_played: stats['activitiesEntered']['basic']['displayValue'],
+            average_lifespan: stats['averageLifespan']['basic']['displayValue'],
+            flawless: flawless,
+            kill_stats: {},
+            items: (),
+            player_badges: badges
 
           }
         end

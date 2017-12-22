@@ -53,6 +53,7 @@ module CommonTools
       fastest_completion: '-',
       games_played: 0,
       average_lifespan: '-',
+      flawless: 0,
       kill_stats: {}
     }
     begin
@@ -63,10 +64,11 @@ module CommonTools
 
         stats = stat_data['Response'][GAME_MODES[mode.to_i]]['allTime']
         entered = stats['activitiesEntered']['basic']['displayValue']
-        won =    !stats['activitiesWon'].nil? ? stats['activitiesWon']['basic']['displayValue'] : stats['activitiesCleared']['basic']['displayValue']
+        won = !stats['activitiesWon'].nil? ? stats['activitiesWon']['basic']['displayValue'] : stats['activitiesCleared']['basic']['displayValue']
         win_rate = ((won.to_f / entered.to_f) * 100).round
 
         fastest = '-'
+        flawless = 0
         unless stats['fastestCompletionMs'].nil?
           ms = stats['fastestCompletionMs']['basic']['value']
           fastest = Time.at(ms / 1000).utc.strftime('%H:%M:%S')
@@ -74,6 +76,21 @@ module CommonTools
 
         unless stats['efficiency'].nil?
           efficiency = stats['efficiency']['basic']['displayValue']
+        end
+
+        if mode == 39
+          flawless_response = api_get(
+            "https://www.bungie.net/Platform/Destiny2/#{type}/Profile/#{membership_id}/?components=Characters,500"
+          )
+          flawless_data = JSON.parse(flawless_response.body)
+          flawless_data = flawless_data['Response']['profileKiosks']['data']['kioskItems']['622587395']
+
+          flawless_data.each do |x|
+            if !x['flavorObjective'].nil? && x['flavorObjective']['objectiveHash'] == 1_973_789_098
+              flawless = x['flavorObjective']['progress']
+              break
+            end
+          end
         end
 
         character_stats = {
@@ -89,6 +106,7 @@ module CommonTools
           fastest_completion: fastest,
           games_played: stats['activitiesEntered']['basic']['displayValue'],
           average_lifespan: stats['averageLifespan']['basic']['displayValue'],
+          flawless: flawless,
           kill_stats: {
             auto_rifle: stats['weaponKillsAutoRifle']['basic']['displayValue'],
             fusion_rifle: stats['weaponKillsFusionRifle']['basic']['displayValue'],
@@ -134,13 +152,13 @@ module CommonTools
     rank = 0
 
     begin
-    response = Typhoeus.get(
-      "https://api.guardian.gg/v2/trials/players/#{membership_type}/#{membership_id}"
-    )
+      response = Typhoeus.get(
+        "https://api.guardian.gg/v2/trials/players/#{membership_type}/#{membership_id}"
+      )
 
-    data = JSON.parse(response.body)
+      data = JSON.parse(response.body)
 
-    elo = data['playerStats'][membership_id.to_s]['elo']
+      elo = data['playerStats'][membership_id.to_s]['elo']
     rescue StandardError => e
       puts e
     end

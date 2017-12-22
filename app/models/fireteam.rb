@@ -141,6 +141,7 @@ class Fireteam < ApplicationRecord
         votes_against = acct.votes_against
         total_votes = votes_against + votes_for
         rep = total_votes.positive? ? (votes_for.to_f / total_votes.to_f).round(2) * 100 : 100
+        new_char = Character.find_by(character_id: player['characterId'])
         account_info = {
           user_id: acct.id,
           badges: acct.badges,
@@ -152,12 +153,21 @@ class Fireteam < ApplicationRecord
           }
         }
       else
+        char_exists = Character.find_by(character_id: player['characterId'])
+
+        if char_exists.nil?
+          new_char = Character.new(character_id: player['characterId'])
+          new_char.save!
+        else
+          new_char = char_exists
+        end
+
         account_info = {}
       end
 
       fireteam << {
         player_name: player['player']['destinyUserInfo']['displayName'],
-        character_id: player['characterId'],
+        character_id: new_char.id,
         emblem: "https://www.bungie.net#{player['player']['destinyUserInfo']['iconPath']}",
         membership_type: player['player']['destinyUserInfo']['membershipType'],
         membership_id: player['player']['destinyUserInfo']['membershipId'],
@@ -201,7 +211,6 @@ class Fireteam < ApplicationRecord
     last_character = data.first[0]
     last_played = data.first[1]['dateLastPlayed']
 
-    # ----------------------------------------------------------------------
     data.each do |char|
       id = char[0]
       light = char[1]['light']
@@ -229,18 +238,17 @@ class Fireteam < ApplicationRecord
         # are character details stored in db?
         details = new_char.character_details.first
 
-        if details != [] && details.updated_at <= 10.minutes.ago # yes
+        if details != [] && !details.nil? && details.updated_at < 10.minutes.ago # yes
+        # if details != [] && !details.nil?
           character_data = details
         else # no
-          if details == []
+          if details == [] || details.nil?
             new_details = new_char.character_details.build(detail_params)
             new_details.save!
           else
             new_char.character_details.update(detail_params)
           end
-        end
-
-      # no
+        end      
       else
         # save character in the database
         new_char = Character.create(character_id: id)
@@ -251,12 +259,8 @@ class Fireteam < ApplicationRecord
       end
 
       # whatever we just did, return the most recent character details
+      
       character_data = new_char.character_details.first
-
-      # get character stats
-      # get character items
-
-      # ----------------------------------------------------------------------
       begin
         if !char[1]['dateLastPlayed'].nil? && (Time.parse(char[1]['dateLastPlayed']) > Time.parse(last_played))
           last_played = char[1]['dateLastPlayed']
@@ -321,9 +325,7 @@ class Fireteam < ApplicationRecord
     if !last_character.is_a? String
       index = characters.index { |x| Character.find(x[:character_data].character_id).character_id == last_character.character_id }
     else
-      index = characters.index do |x|
-        Character.find(x[:character_data].character_id).character_id == last_character
-      end
+      index = characters.index { |x| Character.find(x[:character_data].character_id).character_id == last_character }
     end
     unless index.zero?
       characters[0], characters[index] = characters[index], characters[0]
