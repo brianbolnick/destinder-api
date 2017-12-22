@@ -49,12 +49,7 @@ module DestinderApi
       end
 
       allow do
-        origins 'https://destinder-client-beta.herokuapp.com'
-        resource '*', headers: :any, methods: %i[get post put delete options]
-      end
-
-      allow do
-        origins 'https://www.destinder-client-beta.herokuapp.com'
+        origins 'https://www.destinder.com'
         resource '*', headers: :any, methods: %i[get post put delete options]
       end
     end
