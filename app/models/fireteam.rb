@@ -13,12 +13,9 @@ class Fireteam < ApplicationRecord
       platform
     )
 
-
     if query == []
       begin
-        if platform == '4'
-          name.gsub!(/#/, '%23')
-        end
+        name.gsub!(/#/, '%23') if platform == '4'
         response = Typhoeus.get(
           "https://www.bungie.net/Platform/Destiny2/SearchDestinyPlayer/#{platform}/#{name}/",
           headers: { 'x-api-key' => ENV['API_TOKEN'] }
@@ -291,42 +288,28 @@ class Fireteam < ApplicationRecord
       items = {}
 
       begin
-        if item_set.first
-          item_set.first.attributes.each do |item|
-            next if ['character_id', 'updated_at', 'id', 'created_at'].include? item[0]
-            data = Item.find_by(item_hash: item[1])
-            next if data.nil?
-            items[item[0]] = {
-              item_name: data.item_name,
-              item_icon: data.item_icon,
-              item_tier: data.item_tier,
-              item_type: data.item_type
-            }
-          end
-        else
-          item_set.attributes.each do |item|
-            next if ['character_id', 'updated_at', 'id', 'created_at'].include? item[0]
-            data = Item.find_by(item_hash: item[1])
-            next if data.nil?
-            items[item[0]] = {
-              item_name: data.item_name,
-              item_icon: data.item_icon,
-              item_tier: data.item_tier,
-              item_type: data.item_type
-            }
-          end
+        item_set.first.attributes.each do |item|
+          next if %w[character_id updated_at id created_at].include? item[0]
+          item_data = Item.find_by(item_hash: item[1])
+          next if item_data.nil?
+          items[item[0]] = {
+            item_name: item_data.item_name,
+            item_icon: item_data.item_icon,
+            item_tier: item_data.item_tier,
+            item_type: item_data.item_type
+          }
         end
       rescue StandardError => e
         puts "ERROR!!!!!!!!!! ======> #{e}"
         item_set.attributes.each do |item|
-          next if ['character_id', 'updated_at', 'id', 'created_at'].include? item[0]
-          data = Item.find_by(item_hash: item[1])
-          next if data.nil?
+          next if %w[character_id updated_at id created_at].include? item[0]
+          item_data = Item.find_by(item_hash: item[1])
+          next if item_data.nil?
           items[item[0]] = {
-            item_name: data.item_name,
-            item_icon: data.item_icon,
-            item_tier: data.item_tier,
-            item_type: data.item_type
+            item_name: item_data.item_name,
+            item_icon: item_data.item_icon,
+            item_tier: item_data.item_tier,
+            item_type: item_data.item_type
           }
         end
       end
