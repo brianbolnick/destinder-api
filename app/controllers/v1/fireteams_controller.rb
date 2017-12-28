@@ -26,6 +26,9 @@ module V1
       # find player account details
       # params[:player_name]
 
+      if params[:platform] == '4'
+        params[:player_name].gsub!(/#/, '%23')
+      end
       response = Typhoeus.get(
         "https://www.bungie.net/Platform/Destiny2/SearchDestinyPlayer/#{params[:platform]}/#{params[:player_name]}/",
         headers: { 'x-api-key' => ENV['API_TOKEN'] }

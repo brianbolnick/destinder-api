@@ -13,8 +13,12 @@ class Fireteam < ApplicationRecord
       platform
     )
 
+
     if query == []
       begin
+        if platform == '4'
+          name.gsub!(/#/, '%23')
+        end
         response = Typhoeus.get(
           "https://www.bungie.net/Platform/Destiny2/SearchDestinyPlayer/#{platform}/#{name}/",
           headers: { 'x-api-key' => ENV['API_TOKEN'] }
@@ -239,7 +243,7 @@ class Fireteam < ApplicationRecord
         details = new_char.character_details.first
 
         if details != [] && !details.nil? && details.updated_at < 10.minutes.ago # yes
-        # if details != [] && !details.nil?
+          # if details != [] && !details.nil?
           character_data = details
         else # no
           if details == [] || details.nil?
@@ -248,7 +252,7 @@ class Fireteam < ApplicationRecord
           else
             new_char.character_details.update(detail_params)
           end
-        end      
+        end
       else
         # save character in the database
         new_char = Character.create(character_id: id)
@@ -259,51 +263,23 @@ class Fireteam < ApplicationRecord
       end
 
       # whatever we just did, return the most recent character details
-      
+
       character_data = new_char.character_details.first
       begin
         if !char[1]['dateLastPlayed'].nil? && (Time.parse(char[1]['dateLastPlayed']) > Time.parse(last_played))
           last_played = char[1]['dateLastPlayed']
           last_character = new_char
         end
-        items = {}
 
-        character_items.each do |item|
-          get_items = Typhoeus::Request.new(
-            "https://www.bungie.net/Platform/Destiny2/Manifest/DestinyInventoryItemDefinition/#{item['itemHash']}/",
-            method: :get,
-            headers: { 'x-api-key' => ENV['API_TOKEN'] }
-          )
-          get_items.on_complete do |item_response|
-            begin
-              item_data = JSON.parse(item_response.body)
-              icon = "https://www.bungie.net#{item_data['Response']['displayProperties']['icon']}"
-              name = item_data['Response']['displayProperties']['name']
-              tier = item_data['Response']['inventory']['tierTypeName']
-              item_type = item_data['Response']['itemTypeDisplayName']
-              bucket_hash = item_data['Response']['inventory']['bucketTypeHash']
-              item = {
-                'item_icon' => icon,
-                'item_name' => name,
-                'item_tier' => tier,
-                'item_type' => item_type
-              }
-              next if ITEM_TYPES[bucket_hash].nil?
-              items[ITEM_TYPES[bucket_hash]] = item
-            rescue StandardError
-              item = {
-                'item_icon' => '',
-                'item_name' => '',
-                'item_tier' => '',
-                'item_type' => ''
-              }
-              next
-            end
-          end
-
-          hydra.queue(get_items)
+        # items = CommonTools.fetch_character_items(character_items)
+        if new_char.item_sets == []
+          item_set = new_char.item_sets.new(CommonTools.fetch_character_items(character_items))
+          item_set.save!
+        elsif new_char.item_sets.first.updated_at < 10.minutes.ago
+          item_set = new_char.item_sets.update(CommonTools.fetch_character_items(character_items))
+        else
+          item_set = new_char.item_sets
         end
-        hydra.run
       rescue StandardError => e
         puts '---------------------------------------------------'
         puts e
@@ -312,6 +288,48 @@ class Fireteam < ApplicationRecord
         next
       end
 
+      items = {}
+
+      begin
+        if item_set.first
+          item_set.first.attributes.each do |item|
+            next if ['character_id', 'updated_at', 'id', 'created_at'].include? item[0]
+            data = Item.find_by(item_hash: item[1])
+            next if data.nil?
+            items[item[0]] = {
+              item_name: data.item_name,
+              item_icon: data.item_icon,
+              item_tier: data.item_tier,
+              item_type: data.item_type
+            }
+          end
+        else
+          item_set.attributes.each do |item|
+            next if ['character_id', 'updated_at', 'id', 'created_at'].include? item[0]
+            data = Item.find_by(item_hash: item[1])
+            next if data.nil?
+            items[item[0]] = {
+              item_name: data.item_name,
+              item_icon: data.item_icon,
+              item_tier: data.item_tier,
+              item_type: data.item_type
+            }
+          end
+        end
+      rescue StandardError => e
+        puts "ERROR!!!!!!!!!! ======> #{e}"
+        item_set.attributes.each do |item|
+          next if ['character_id', 'updated_at', 'id', 'created_at'].include? item[0]
+          data = Item.find_by(item_hash: item[1])
+          next if data.nil?
+          items[item[0]] = {
+            item_name: data.item_name,
+            item_icon: data.item_icon,
+            item_tier: data.item_tier,
+            item_type: data.item_type
+          }
+        end
+      end
       characters << {
         character_data: character_data,
         player_data: {

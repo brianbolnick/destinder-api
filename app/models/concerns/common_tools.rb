@@ -169,46 +169,50 @@ module CommonTools
   def self.fetch_character_items(character_items)
     hydra = Typhoeus::Hydra.hydra
     items = {}
-    character_items.each do |item|
-      query = Item.find_by(item_hash: item['itemHash'])
-      if query.nil?
-        get_items = Typhoeus::Request.new(
-          "https://www.bungie.net/Platform/Destiny2/Manifest/DestinyInventoryItemDefinition/#{item['itemHash']}/",
-          method: :get,
-          headers: { 'x-api-key' => ENV['API_TOKEN'] }
-        )
-        get_items.on_complete do |item_response|
-          begin
-            item_data = JSON.parse(item_response.body)
-            icon = "https://www.bungie.net#{item_data['Response']['displayProperties']['icon']}"
-            name = item_data['Response']['displayProperties']['name']
-            tier = item_data['Response']['inventory']['tierTypeName']
-            item_type = item_data['Response']['itemTypeDisplayName']
-            bucket_hash = item_data['Response']['inventory']['bucketTypeHash']
-            new_item = Item.new(
-              item_hash: item['itemHash'],
-              item_icon: icon,
-              item_name: name,
-              item_tier: tier,
-              item_type: item_type,
-              bucket_hash: bucket_hash
-            )
+    begin
+      character_items.each do |item|
+        query = Item.find_by(item_hash: item['itemHash'])
+        if query.nil?
+          get_items = Typhoeus::Request.new(
+            "https://www.bungie.net/Platform/Destiny2/Manifest/DestinyInventoryItemDefinition/#{item['itemHash']}/",
+            method: :get,
+            headers: { 'x-api-key' => ENV['API_TOKEN'] }
+          )
+          get_items.on_complete do |item_response|
+            begin
+              item_data = JSON.parse(item_response.body)
+              icon = "https://www.bungie.net#{item_data['Response']['displayProperties']['icon']}"
+              name = item_data['Response']['displayProperties']['name']
+              tier = item_data['Response']['inventory']['tierTypeName']
+              item_type = item_data['Response']['itemTypeDisplayName']
+              bucket_hash = item_data['Response']['inventory']['bucketTypeHash']
+              new_item = Item.new(
+                item_hash: item['itemHash'],
+                item_icon: icon,
+                item_name: name,
+                item_tier: tier,
+                item_type: item_type,
+                bucket_hash: bucket_hash
+              )
 
-            new_item.save!
-            next if ITEM_TYPES[bucket_hash].nil?
-            items[ITEM_TYPES[new_item.bucket_hash]] = new_item.item_hash
-          rescue StandardError => e
-            puts e
-            next
+              new_item.save!
+              # next if ITEM_TYPES[bucket_hash].nil?
+              items[ITEM_TYPES[new_item.bucket_hash]] = new_item.item_hash
+            rescue StandardError => e
+              puts e
+              next
+            end
           end
-        end
 
-        hydra.queue(get_items)
-      else
-        items[ITEM_TYPES[query.bucket_hash]] = query.item_hash
+          hydra.queue(get_items)
+        else
+          items[ITEM_TYPES[query.bucket_hash]] = query.item_hash
+        end
       end
+      hydra.run
+    rescue StandardError => e
+      puts e
     end
-    hydra.run
     items.to_h
   end
 end

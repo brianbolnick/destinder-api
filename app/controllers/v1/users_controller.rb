@@ -38,7 +38,6 @@ module V1
       end
     end
 
-
     def logout
       reset_session
     end
@@ -62,7 +61,7 @@ module V1
       # TODO: Should this ever need to check if data is nil or refresh the data before responding?
       @user = User.find(params[:user_id])
       @character = @user.characters.find_by(character_id: params[:id]).character_details.first
-      
+
       render json: @character
     end
 
@@ -80,7 +79,7 @@ module V1
         voteable = User.find_by(id: params[:user_id].to_i)
         current_user.vote_for(voteable)
         render json: { success: 'Vote cast', data: 'Upvote' }
-        end
+      end
     rescue StandardError => e
       render json: { failure: e }
     end

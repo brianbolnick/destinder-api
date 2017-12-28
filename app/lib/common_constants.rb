@@ -46,11 +46,13 @@ module CommonConstants
     14_239_492 => :chest_armor,
     20_886_954 => :leg_armor,
     1_585_787_867 => :class_item,
-    # "4023194814" => "shell",
-    # "284967655" => "ship",
+    4_023_194_814 => :shell,
+    284_967_655 => :ship,
     3_284_755_031 => :subclass,
-    # "4274335291" => "emblem",
-    # "3054419239" => "emote",
-    1_269_569_095 => :aura
+    4_274_335_291 => :emblem,
+    3_054_419_239 => :emote,
+    1_269_569_095 => :aura,
+    4_292_445_962 => :clan_banners,
+    2_025_709_351 => :vehicle
   }.freeze
 end
