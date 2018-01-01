@@ -313,13 +313,15 @@ class Fireteam < ApplicationRecord
           }
         end
       end
+      character_stats = CommonTools.fetch_character_stats(mem_id, mem_type, id, 39)
       characters << {
         character_data: character_data,
         player_data: {
-          stats: CommonTools.fetch_character_stats(mem_id, mem_type, id, 39)
+          stats: character_stats
         },
         recent_games: get_recent_games(mem_type, mem_id, id),
-        items: items
+        items: items,
+        analysis_badges: get_analysis_badges(character_stats)
       }
     end
 
@@ -364,5 +366,182 @@ class Fireteam < ApplicationRecord
       puts e
     end
     games
+  end
+
+  def self.get_analysis_badges(stats)
+    badges = []
+    total_kills = stats[:kills].to_f
+
+    if (stats[:kill_stats][:sniper].to_f / total_kills).round(2) >= 0.33
+      badges << {
+        id: 1,
+        name: 'Sniper',
+        badge_description: 'More than 1/3 of total weapon kills with a Sniper Rifle',
+        badge_icon: '<i class="fa fa-crosshairs" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #f1c40f; border: 1px #f1c40f solid;'
+      }
+    end
+
+    if (stats[:kill_stats][:pulse_rifle].to_f / total_kills).round(2) >= 0.33
+      badges << {
+        id: 2,
+        name: 'Pulse',
+        badge_description: 'More than 1/3 of total weapon kills with a Pulse Rifle',
+        badge_icon: '<i class="fa fa-crosshairs" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #2ecc71; border: 1px #2ecc71 solid;'
+      }
+    end
+
+    if (stats[:kill_stats][:scout_rifle].to_f / total_kills).round(2) >= 0.33
+      badges << {
+        id: 3,
+        name: 'Scout',
+        badge_description: 'More than 1/3 of total weapon kills with a Scout Rifle',
+        badge_icon: '<i class="fa fa-crosshairs" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #9b59b6; border: 1px #9b59b6 solid;'
+      }
+    end
+
+    if (stats[:kill_stats][:hand_cannon].to_f / total_kills).round(2) >= 0.33
+      badges << {
+        id: 4,
+        name: 'Hand Cannon',
+        badge_description: 'More than 1/3 of total weapon kills with a Hand Cannon',
+        badge_icon: '<i class="fa fa-crosshairs" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #3498db; border: 1px #3498db solid;'
+      }
+    end
+
+    if (stats[:kill_stats][:fusion_rifle].to_f / total_kills).round(2) >= 0.33
+      badges << {
+        id: 5,
+        name: 'Fusion',
+        badge_description: 'More than 1/3 of total weapon kills with a Fusion Rifle',
+        badge_icon: '<i class="fa fa-crosshairs" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #34495e; border: 1px #34495e solid;'
+      }
+    end
+
+    if (stats[:kill_stats][:auto_rifle].to_f / total_kills).round(2) >= 0.33
+      badges << {
+        id: 6,
+        name: 'Auto',
+        badge_description: 'More than 1/3 of total weapon kills with an Auto Rifle',
+        badge_icon: '<i class="fa fa-crosshairs" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #FA8708; border: 1px #FA8708 solid;'
+      }
+    end
+
+    if (stats[:kill_stats][:side_arm].to_f / total_kills).round(2) >= 0.33
+      badges << {
+        id: 7,
+        name: 'Sidearm',
+        badge_description: 'More than 1/3 of total weapon kills with a Sidearm',
+        badge_icon: '<i class="fa fa-crosshairs" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #AA885F; border: 1px #AA885F solid;'
+      }
+    end
+
+    if (stats[:kill_stats][:shotgun].to_f / total_kills).round(2) >= 0.33
+      badges << {
+        id: 8,
+        name: 'Shotgun',
+        badge_description: 'More than 1/3 of total weapon kills with a Shotgun',
+        badge_icon: '<i class="fa fa-crosshairs" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #e74c3c; border: 1px #e74c3c solid;'
+      }
+    end
+
+    # medic if revives performed is More than 2x received
+    if (stats[:kill_stats][:revives_performed].to_f >= (stats[:kill_stats][:revives_received].to_f * 2)) && stats[:kill_stats][:revives_performed].to_i != 0
+      badges << {
+        id: 9,
+        name: 'Medic',
+        badge_description: 'Performed More than 2x revives than received',
+        badge_icon: '<i class="fa fa-medkit" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #FF3B3F; border: 1px #FF3B3F solid;'
+      }
+    end
+
+    # survivor if average life span > 2mins
+
+    # ability kills More than 20% of total kills
+    if (stats[:kill_stats][:ability].to_f  / total_kills).round(2) >= 0.20
+      badges << {
+        id: 10,
+        name: 'Super Man',
+        badge_description: '20%+ of total kills with abilities',
+        badge_icon: '<i class="fa fa-superpowers" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #4484CE; border: 1px #4484CE solid;'
+      }
+    end
+
+    # marksman if precicion kills are More than 35% of total weapon kills
+    if (stats[:kill_stats][:precision_kills].to_f  / total_kills).round(2) >= 0.60
+      badges << {
+        id: 11,
+        name: 'Marksman',
+        badge_description: 'More than 60% of total weapon kills are precision kills',
+        badge_icon: '<i class="fa fa-bullseye" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px; color: #FF3B3D;"></i>',
+        badge_color: 'color: #212121; border: 1px #212121 solid;'
+      }
+    end
+
+    # Fight Forever if avg Spree > 10
+    if (stats[:kill_stats][:longest_spree].to_f  >= 10) && (stats[:kill_stats][:longest_spree].to_f < 15)
+      badges << {
+        id: 12,
+        name: 'Fight Forever',
+        badge_description: 'Kill Spree Greater than 10',
+        badge_icon: '<i class="fa fa-fire-extinguisher" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #FF3B3D; border: 1px #009EF9 solid;'
+      }
+    end
+
+    # Army of One if avg Spree > 15
+    if (stats[:kill_stats][:longest_spree].to_f >= 15) && (stats[:kill_stats][:longest_spree].to_f < 20)
+      badges << {
+        id: 13,
+        name: 'Army Of One',
+        badge_description: 'Kill Spree Greater than 15',
+        badge_icon: '<i class="fa fa-diamond " style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px; color: #5F523C;"></i>',
+        badge_color: 'color: #DFBF93; border: 1px #374730 solid;'
+      }
+    end
+
+    # Trials God of One if avg Spree > 15
+    if stats[:kill_stats][:longest_spree].to_f >= 20
+      badges << {
+        id: 14,
+        name: 'Trials God',
+        badge_description: 'Kill Spree Greater than 20',
+        badge_icon: '<i class="fa fa-star" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px; color: #212121;"></i>',
+        badge_color: 'color: #009EF9; border: 1px #00FEFC solid;'
+      }
+    end
+
+    # camper if avg kill distance > 25
+    if stats[:kill_stats][:average_kill_distance].to_f >= 25
+      badges << {
+        id: 15,
+        name: 'Camper',
+        badge_description: 'Kill Distance is greater than 25m',
+        badge_icon: '<i class="fa fa-free-code-camp" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #AA885F; border: 1px #AA885F solid;'
+      }
+    end
+
+    # rusher if kill distance < 20
+    if (stats[:kill_stats][:average_kill_distance].to_f <= 20) && (stats[:kill_stats][:average_kill_distance].to_f > 0)
+      badges << {
+        id: 16,
+        name: 'Rusher',
+        badge_description: 'Kill Distance is less than 20m',
+        badge_icon: '<i class="fa fa-fast-forward" style="float: left; white-space: nowrap; font-size: 12px; line-height: 21px; padding-right: 4px; margin-left: -6px;"></i>',
+        badge_color: 'color: #FF4500; border: 1px #FF4500 solid;'
+      }
+
+    end
+    badges
   end
 end
