@@ -319,7 +319,7 @@ class Fireteam < ApplicationRecord
         player_data: {
           stats: character_stats
         },
-        recent_games: get_recent_games(mem_type, mem_id, id),
+        recent_games: get_recent_games(mem_type, mem_id, new_char),
         items: items,
         analysis_badges: get_analysis_badges(character_stats)
       }
@@ -337,35 +337,83 @@ class Fireteam < ApplicationRecord
     characters.to_json
   end
 
-  def self.get_recent_games(membership_type, membership_id, character_id)
+  def self.get_recent_games(membership_type, membership_id, character)
     games = []
+    hydra = Typhoeus::Hydra.hydra
     begin
-      # get_recent_games =  CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{character_id}/Stats/Activities/?mode=39&count=15")
-      recent_request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{character_id}/Stats/Activities/?mode=39&count=15")
+      recent_request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{character.character_id}/Stats/Activities/?mode=39&count=50")
       game_data = JSON.parse(recent_request.body)
+
       game_data['Response']['activities'].each do |game|
-        game_kills = game['values']['kills']['basic']['value']
-        game_deaths = game['values']['deaths']['basic']['value']
-        game_kd = game['values']['killsDeathsRatio']['basic']['displayValue']
-        game_kad = game['values']['killsDeathsAssists']['basic']['displayValue']
-        game_standing = game['values']['standing']['basic']['value']
-        game_date = game['period']
+        instance_id = game['activityDetails']['instanceId']
+        get_pgcr = Typhoeus::Request.new(
+          "https://www.bungie.net/Platform/Destiny2/Stats/PostGameCarnageReport/#{instance_id}/",
+          method: :get,
+          headers: { 'x-api-key' => ENV['API_TOKEN'] }
+        )
 
-        game_info = {
-          'kills' => game_kills,
-          'deaths' => game_deaths,
-          'kd_ratio' => game_kd,
-          'kad_ratio' => game_kad,
-          'standing' => game_standing,
-          'game_date' => game_date
-        }
+        get_pgcr.on_complete do |pgcr_response|
+          pgcr_data = JSON.parse(pgcr_response.body)
+          alpha = []
+          bravo = []
+          a = pgcr_data['Response']['entries'].select { |x| x['values']['team']['basic']['value'] == 16 }
+          b = pgcr_data['Response']['entries'].select { |x| x['values']['team']['basic']['value'] == 17 }
 
-        games << game_info
+          a.each do |player|
+            alpha << {
+              player_name: player['player']['destinyUserInfo']['displayName'],
+              character_id: player['characterId'],
+              emblem: "https://www.bungie.net#{player['player']['destinyUserInfo']['iconPath']}",
+              membership_type: player['player']['destinyUserInfo']['membershipType'],
+              membership_id: player['player']['destinyUserInfo']['membershipId'],
+              has_account: false,
+              account_info: {}
+            }
+          end
+
+          b.each do |player|
+            bravo << {
+              player_name: player['player']['destinyUserInfo']['displayName'],
+              character_id: player['characterId'],
+              emblem: "https://www.bungie.net#{player['player']['destinyUserInfo']['iconPath']}",
+              membership_type: player['player']['destinyUserInfo']['membershipType'],
+              membership_id: player['player']['destinyUserInfo']['membershipId'],
+              has_account: false,
+              account_info: {}
+            }
+          end
+
+          game_info = {
+            instance_id: instance_id.to_i,
+            game_date: game['period'],
+            standing: game['values']['standing']['basic']['value'],
+            completed: game['values']['completed']['basic']['displayValue'],
+            completion_reason: game['values']['completionReason']['basic']['displayValue'],
+            activity_duration: game['values']['activityDurationSeconds']['basic']['displayValue'],
+            kills: game['values']['kills']['basic']['value'],
+            deaths: game['values']['deaths']['basic']['value'],
+            kd_ratio: game['values']['killsDeathsRatio']['basic']['displayValue'],
+            kad_ratio: game['values']['killsDeathsAssists']['basic']['displayValue'],
+            efficiency: game['values']['efficiency']['basic']['displayValue'],
+            members: {
+              alpha: alpha,
+              bravo: bravo
+            }
+          }
+
+          games << game_info
+        end
+
+        hydra.queue(get_pgcr)
       end
+      hydra.run
     rescue StandardError => e
       puts e
     end
-    games
+    unless games.nil?
+      games.sort_by! { |x| x[:game_date] }
+    end
+    games.reverse
   end
 
   def self.get_analysis_badges(stats)
@@ -466,7 +514,7 @@ class Fireteam < ApplicationRecord
     # survivor if average life span > 2mins
 
     # ability kills More than 20% of total kills
-    if (stats[:kill_stats][:ability].to_f  / total_kills).round(2) >= 0.20
+    if (stats[:kill_stats][:ability].to_f / total_kills).round(2) >= 0.20
       badges << {
         id: 10,
         name: 'Super Man',
@@ -477,7 +525,7 @@ class Fireteam < ApplicationRecord
     end
 
     # marksman if precicion kills are More than 35% of total weapon kills
-    if (stats[:kill_stats][:precision_kills].to_f  / total_kills).round(2) >= 0.60
+    if (stats[:kill_stats][:precision_kills].to_f / total_kills).round(2) >= 0.60
       badges << {
         id: 11,
         name: 'Marksman',
@@ -488,7 +536,7 @@ class Fireteam < ApplicationRecord
     end
 
     # Fight Forever if avg Spree > 10
-    if (stats[:kill_stats][:longest_spree].to_f  >= 10) && (stats[:kill_stats][:longest_spree].to_f < 15)
+    if (stats[:kill_stats][:longest_spree].to_f >= 10) && (stats[:kill_stats][:longest_spree].to_f < 15)
       badges << {
         id: 12,
         name: 'Fight Forever',
