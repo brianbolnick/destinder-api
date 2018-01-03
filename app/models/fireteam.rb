@@ -339,80 +339,35 @@ class Fireteam < ApplicationRecord
 
   def self.get_recent_games(membership_type, membership_id, character)
     games = []
-    hydra = Typhoeus::Hydra.hydra
+
     begin
       recent_request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{character.character_id}/Stats/Activities/?mode=39&count=50")
       game_data = JSON.parse(recent_request.body)
 
       game_data['Response']['activities'].each do |game|
         instance_id = game['activityDetails']['instanceId']
-        get_pgcr = Typhoeus::Request.new(
-          "https://www.bungie.net/Platform/Destiny2/Stats/PostGameCarnageReport/#{instance_id}/",
-          method: :get,
-          headers: { 'x-api-key' => ENV['API_TOKEN'] }
-        )
+        game_info = {
+          instance_id: instance_id.to_i,
+          mode: game['activityDetails']['mode'],
+          game_date: game['period'],
+          standing: game['values']['standing']['basic']['value'],
+          completed: game['values']['completed']['basic']['displayValue'],
+          completion_reason: game['values']['completionReason']['basic']['displayValue'],
+          activity_duration: game['values']['activityDurationSeconds']['basic']['displayValue'],
+          kills: game['values']['kills']['basic']['value'],
+          deaths: game['values']['deaths']['basic']['value'],
+          kd_ratio: game['values']['killsDeathsRatio']['basic']['displayValue'],
+          kad_ratio: game['values']['killsDeathsAssists']['basic']['displayValue'],
+          efficiency: game['values']['efficiency']['basic']['displayValue']
+        }
 
-        get_pgcr.on_complete do |pgcr_response|
-          pgcr_data = JSON.parse(pgcr_response.body)
-          alpha = []
-          bravo = []
-          a = pgcr_data['Response']['entries'].select { |x| x['values']['team']['basic']['value'] == 16 }
-          b = pgcr_data['Response']['entries'].select { |x| x['values']['team']['basic']['value'] == 17 }
-
-          a.each do |player|
-            alpha << {
-              player_name: player['player']['destinyUserInfo']['displayName'],
-              character_id: player['characterId'],
-              emblem: "https://www.bungie.net#{player['player']['destinyUserInfo']['iconPath']}",
-              membership_type: player['player']['destinyUserInfo']['membershipType'],
-              membership_id: player['player']['destinyUserInfo']['membershipId'],
-              has_account: false,
-              account_info: {}
-            }
-          end
-
-          b.each do |player|
-            bravo << {
-              player_name: player['player']['destinyUserInfo']['displayName'],
-              character_id: player['characterId'],
-              emblem: "https://www.bungie.net#{player['player']['destinyUserInfo']['iconPath']}",
-              membership_type: player['player']['destinyUserInfo']['membershipType'],
-              membership_id: player['player']['destinyUserInfo']['membershipId'],
-              has_account: false,
-              account_info: {}
-            }
-          end
-
-          game_info = {
-            instance_id: instance_id.to_i,
-            game_date: game['period'],
-            standing: game['values']['standing']['basic']['value'],
-            completed: game['values']['completed']['basic']['displayValue'],
-            completion_reason: game['values']['completionReason']['basic']['displayValue'],
-            activity_duration: game['values']['activityDurationSeconds']['basic']['displayValue'],
-            kills: game['values']['kills']['basic']['value'],
-            deaths: game['values']['deaths']['basic']['value'],
-            kd_ratio: game['values']['killsDeathsRatio']['basic']['displayValue'],
-            kad_ratio: game['values']['killsDeathsAssists']['basic']['displayValue'],
-            efficiency: game['values']['efficiency']['basic']['displayValue'],
-            members: {
-              alpha: alpha,
-              bravo: bravo
-            }
-          }
-
-          games << game_info
-        end
-
-        hydra.queue(get_pgcr)
+        games << game_info
       end
-      hydra.run
     rescue StandardError => e
       puts e
     end
-    unless games.nil?
-      games.sort_by! { |x| x[:game_date] }
-    end
+
+    games.sort_by! { |x| x[:game_date] } unless games.nil?
     games.reverse
   end
 

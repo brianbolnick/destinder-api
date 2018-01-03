@@ -25,6 +25,7 @@ Rails.application.routes.draw do
     get 'validate_player(/:data)', to: 'fireteams#validate_player'
     get 'fireteams/:platform/:player_name', to: 'fireteams#team'
     get 'fireteams/stats/:platform/:membership_id', to: 'fireteams#stats'
+    get 'characters/pgcr/:instance_id', to: 'characters#pgcr' 
 
     resources :users do
       post 'logout', to: 'users#logout'
