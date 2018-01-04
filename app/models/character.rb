@@ -35,12 +35,15 @@ class Character < ApplicationRecord
         kd_ratio: player['values']['killsDeathsRatio']['basic']['displayValue'],
         kad_ratio: player['values']['killsDeathsAssists']['basic']['displayValue'],
         efficiency: player['values']['efficiency']['basic']['displayValue'],
+        score: player['values']['score']['basic']['displayValue'],
+        standing: player['standing'],
         has_account: false,
         account_info: {}
       }
     end
 
     b.each do |player|
+      puts 'test'
       bravo << {
         player_name: player['player']['destinyUserInfo']['displayName'],
         character_id: player['characterId'],
@@ -52,6 +55,8 @@ class Character < ApplicationRecord
         kd_ratio: player['values']['killsDeathsRatio']['basic']['displayValue'],
         kad_ratio: player['values']['killsDeathsAssists']['basic']['displayValue'],
         efficiency: player['values']['efficiency']['basic']['displayValue'],
+        score: player['values']['score']['basic']['displayValue'],
+        standing: player['standing'],
         has_account: false,
         account_info: {}
       }
