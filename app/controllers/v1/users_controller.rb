@@ -113,6 +113,10 @@ module V1
       render json: @user.badges
     end
 
+    def total_count
+      render json: { count: User.count }
+    end
+
     def find
       @users = []
       User.where('display_name ILIKE ? AND api_membership_type = ?', "%#{params[:data]}%", current_user.api_membership_type).each do |x|

@@ -121,5 +121,5 @@ Merit::Badge.create!(
 Merit::Badge.create!(
   id: 10,
   name: 'Conjuror',
-  description: 'Referred a friend !'
+  description: 'Referred 10 people to the site!'
 )

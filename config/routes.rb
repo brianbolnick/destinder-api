@@ -22,6 +22,7 @@ Rails.application.routes.draw do
 
   namespace :v1 do
     get 'users/find(/:data)', to: 'users#find'
+    get 'users/total_count', to: 'users#total_count'
     get 'validate_player(/:data)', to: 'fireteams#validate_player'
     get 'fireteams/:platform/:player_name', to: 'fireteams#team'
     get 'fireteams/stats/:platform/:membership_id', to: 'fireteams#stats'

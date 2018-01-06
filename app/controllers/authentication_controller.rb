@@ -12,7 +12,8 @@ class AuthenticationController < ApplicationController
     membership_type = user_info[:membership_type]
 
     # create user if it doesn't exist...
-    user = User.where(display_name: display_name).first_or_create!(
+    user = User.where('display_name ILIKE ? AND api_membership_type = ?', "%#{display_name}%", membership_type).first_or_create!(
+    # user = User.where(display_name: display_name).first_or_create!(
       display_name: display_name,
       profile_picture: profile_picture,
       locale: locale,
