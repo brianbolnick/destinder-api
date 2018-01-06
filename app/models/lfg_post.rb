@@ -33,6 +33,12 @@ class LfgPost < ApplicationRecord
 
     if [100, 101, 102].include? mode
       return @character_stats.to_json
+    elsif mode == 40
+      return get_raid_stats(user, character_id, @character_stats, game_hashes = %w[ 3089205900 ])
+    elsif mode == 41
+      return get_raid_stats(user, character_id, @character_stats, game_hashes = %w[ 2164432138 ])
+    elsif mode == 42
+      return get_raid_stats(user, character_id, @character_stats, game_hashes = %w[ 809170886 ])
     elsif !checkpoint.nil?
       if [1, 2, 3, 4, 5, 6].include? checkpoint
         if mode == 4
@@ -173,7 +179,7 @@ class LfgPost < ApplicationRecord
   end
 
   def self.get_raid_stats(user, character_id, character_stats, game_hashes)
-    @character_stats = character_stats
+    return_stats = character_stats
     badges = user.badges
     votes_for = user.votes_for
     votes_against = user.votes_against
@@ -183,7 +189,7 @@ class LfgPost < ApplicationRecord
     begin
       response = Typhoeus.get(
         "https://www.bungie.net/Platform/Destiny2/#{user.api_membership_type}/Account/#{user.api_membership_id}/Character/#{character_id}/Stats/AggregateActivityStats/",
-        # "https://www.bungie.net/Platform/Destiny2/2/Account/4611686018428388122/Character/2305843009260593955/Stats/AggregateActivityStats/",
+        # "https://www.bungie.net/Platform/Destiny2/2/Account/4611686018428389623/Character/2305843009262373961/Stats/AggregateActivityStats/",
         headers: { 'x-api-key' => ENV['API_TOKEN'] }
       )
 
@@ -208,8 +214,8 @@ class LfgPost < ApplicationRecord
           find_current = stats.find { |activity| activity['activityHash'] == x.to_i }
           next if find_current.nil?
           current_activity = find_current['values']
-          kd_ratio += current_activity['activityKillsDeathsRatio']['basic']['value'] # TODO: calculate average
-          kad_ratio += current_activity['activityKillsDeathsAssists']['basic']['value'] # TODO: calculate average
+          kd_ratio += current_activity['activityKillsDeathsRatio']['basic']['value'].round(2) # TODO: calculate average
+          kad_ratio += current_activity['activityKillsDeathsAssists']['basic']['value'].round(2) # TODO: calculate average
           kills += current_activity['activityKills']['basic']['value']
           deaths += current_activity['activityDeaths']['basic']['value']
           deaths += current_activity['activityDeaths']['basic']['value']
@@ -224,10 +230,10 @@ class LfgPost < ApplicationRecord
             elsif fastest < current_activity['fastestCompletionMsForActivity']['basic']['value']
               fastest = current_activity['fastestCompletionMsForActivity']['basic']['value']
               fastest_time = Time.at(fastest / 1000).utc.strftime('%H:%M:%S')
-              end
+            end
           end
 
-          @character_stats = {
+          return_stats = {
             "player_name": user.display_name,
             "reputation": rep,
             "total_votes": total_votes,
@@ -252,6 +258,6 @@ class LfgPost < ApplicationRecord
       Rails.logger.error e
     end
 
-    @character_stats.to_json
+    return_stats.to_json
   end
 end
