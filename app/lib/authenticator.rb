@@ -7,28 +7,40 @@ class Authenticator
     mem_id = access_token_resp['membership_id']
     user_info_resp = fetch_bungie_user_info(mem_id)
     user_info = user_info_resp['Response']
-    # display_name =  user_info["destinyMemberships"]["displayName"]
-    # if user_info.keys.any? {|k| k.include? 'xboxDisplayName'}
-    #   display_name = user_info["bungieNetUser"]["xboxDisplayName"]
-    # elsif user_info.keys.any? {|k| k.include? 'psnDisplayName'}
-    #   display_name = user_info["bungieNetUser"]["psnDisplayName"]
-    # else
-    #   display_name = user_info["bungieNetUser"]["blizzardDisplayName"]
-    # end
 
-    # debugger
+    if user_info['destinyMemberships'].length > 1
 
-    {
-      issuer: ENV['DESTINDER_CLIENT_URL'],
-      membership_id: user_info['destinyMemberships'][0]['membershipId'].to_s,
-      membership_type: user_info['destinyMemberships'][0]['membershipType'].to_s,
-      # display_name: display_name,
-      display_name: user_info['destinyMemberships'][0]['displayName'],
-      locale: user_info['bungieNetUser']['locale'],
-      profile_picture: "https://www.bungie.net#{user_info['bungieNetUser']['profilePicturePath']}",
-      refresh_token: access_token_resp['refresh_token'],
-      refresh_time: access_token_resp['refresh_expires_in']
-    }
+      login_info = []
+      user_info['destinyMemberships'].each do |x|
+        login_info << {
+          issuer: ENV['DESTINDER_CLIENT_URL'],
+          membership_id: x['membershipId'],
+          membership_type: x['membershipType'],
+          display_name: x['displayName'],
+          locale: user_info['bungieNetUser']['locale'],
+          profile_picture: "https://www.bungie.net#{user_info['bungieNetUser']['profilePicturePath']}",
+          refresh_token: access_token_resp['refresh_token'],
+          refresh_time: access_token_resp['refresh_expires_in']
+        }
+      end
+      # # Generate token...
+      token = AuthToken.multi_logins(login_info)
+      return token
+      # controller.redirect_to "#{ENV['DESTINDER_CLIENT_URL']}/login_select?token=#{token}"
+    else
+
+      return {
+        issuer: ENV['DESTINDER_CLIENT_URL'],
+        membership_id: user_info['destinyMemberships'][0]['membershipId'].to_s,
+        membership_type: user_info['destinyMemberships'][0]['membershipType'].to_s,
+        # display_name: display_name,
+        display_name: user_info['destinyMemberships'][0]['displayName'],
+        locale: user_info['bungieNetUser']['locale'],
+        profile_picture: "https://www.bungie.net#{user_info['bungieNetUser']['profilePicturePath']}",
+        refresh_token: access_token_resp['refresh_token'],
+        refresh_time: access_token_resp['refresh_expires_in']
+      }
+    end
   end
 
   private
@@ -54,6 +66,7 @@ class Authenticator
                               'X-API-Key' => ENV['X_API_KEY']
                             })
 
-    JSON.parse(response.body)
+    data = JSON.parse(response.body)
+    data
   end
-  end
+end

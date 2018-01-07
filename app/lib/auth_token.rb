@@ -17,6 +17,16 @@ module AuthToken
     JWT.encode payload, ENV['JWT_SECRET'], 'HS256'
   end
 
+  def self.multi_logins(sub)
+    payload = {}
+    sub.each_with_index do |x, index|
+      payload[index] = x
+    end
+
+    token = JWT.encode payload, ENV['JWT_SECRET'], 'HS256'
+    token
+  end
+
   def self.decode(token)
     options = {
       iss: ENV['DESTINDER_CLIENT_URL'],

@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   root to: 'auth#is_signed_in?'
   get '/auth/bungie', to: 'authentication#bungie', format: false
   get '/login', to: 'sessions#create'
+  post '/login_select', to: 'authentication#login_select', format: false
 
   scope :auth do
     get 'is_signed_in', to: 'auth#is_signed_in?'
