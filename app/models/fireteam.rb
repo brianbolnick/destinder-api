@@ -367,7 +367,7 @@ class Fireteam < ApplicationRecord
       puts e
     end
 
-    games.sort_by! { |x| x[:game_date] } unless games.nil?
+    games&.sort_by! { |x| x[:game_date] }
     games.reverse
   end
 

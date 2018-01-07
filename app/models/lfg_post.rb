@@ -34,11 +34,11 @@ class LfgPost < ApplicationRecord
     if [100, 101, 102].include? mode
       return @character_stats.to_json
     elsif mode == 40
-      return get_raid_stats(user, character_id, @character_stats, game_hashes = %w[ 3089205900 ])
+      return get_raid_stats(user, character_id, @character_stats, game_hashes = %w[3089205900])
     elsif mode == 41
-      return get_raid_stats(user, character_id, @character_stats, game_hashes = %w[ 2164432138 ])
+      return get_raid_stats(user, character_id, @character_stats, game_hashes = %w[2164432138])
     elsif mode == 42
-      return get_raid_stats(user, character_id, @character_stats, game_hashes = %w[ 809170886 ])
+      return get_raid_stats(user, character_id, @character_stats, game_hashes = %w[809170886])
     elsif !checkpoint.nil?
       if [1, 2, 3, 4, 5, 6].include? checkpoint
         if mode == 4

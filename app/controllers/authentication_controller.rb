@@ -6,10 +6,8 @@ class AuthenticationController < ApplicationController
     user_info = authenticator.bungie(params[:code])
 
     if user_info.is_a? String
-      puts 'test'
       redirect_to "#{ENV['DESTINDER_CLIENT_URL']}/login_select?login_token=#{user_info}"
     else
-      puts 'test'
       display_name = user_info[:display_name]
       profile_picture = user_info[:profile_picture]
       locale = user_info[:locale]
@@ -18,7 +16,6 @@ class AuthenticationController < ApplicationController
 
       # create user if it doesn't exist...
       user = User.where('display_name ILIKE ? AND api_membership_type = ?', "%#{display_name}%", membership_type).first_or_create!(
-      # user = User.where(display_name: display_name).first_or_create!(
         display_name: display_name,
         profile_picture: profile_picture,
         locale: locale,
@@ -45,34 +42,33 @@ class AuthenticationController < ApplicationController
 
   def login_select
     user_info = params
-      display_name = user_info[:display_name]
-      profile_picture = user_info[:profile_picture]
-      locale = user_info[:locale]
-      membership_id = user_info[:membership_id]
-      membership_type = user_info[:membership_type]
+    display_name = user_info[:display_name]
+    profile_picture = user_info[:profile_picture]
+    locale = user_info[:locale]
+    membership_id = user_info[:membership_id]
+    membership_type = user_info[:membership_type]
 
-      # create user if it doesn't exist...
-      user = User.where('display_name ILIKE ? AND api_membership_type = ?', "%#{display_name}%", membership_type.to_s).first_or_create!(
-      # user = User.where(display_name: display_name).first_or_create!(
-        display_name: display_name,
-        profile_picture: profile_picture,
-        locale: locale,
-        api_membership_id: membership_id.to_s,
-        api_membership_type: membership_type
-      )
+    # create user if it doesn't exist...
+    user = User.where('display_name ILIKE ? AND api_membership_type = ?', "%#{display_name}%", membership_type.to_s).first_or_create!(      
+      display_name: display_name,
+      profile_picture: profile_picture,
+      locale: locale,
+      api_membership_id: membership_id.to_s,
+      api_membership_type: membership_type
+    )
 
-      FetchCharacterDataJob.perform_later(user)
+    FetchCharacterDataJob.perform_later(user)
 
-      if user.badges == []
-        user.add_badge(5) if user.id <= 550
-      end
+    if user.badges == []
+      user.add_badge(5) if user.id <= 550
+    end
 
-      user_info[:user_id] = user.id
+    user_info[:user_id] = user.id
 
-      # # Generate token...
-      token = AuthToken.encodeBungie(user_info)
+    # # Generate token...
+    token = AuthToken.encodeBungie(user_info)
 
-      render json: {token: token}
+    render json: { token: token }
   rescue StandardError => error
     redirect_to "#{issuer}/auth_error?error=#{error.message}"
   end
