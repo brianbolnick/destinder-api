@@ -7,7 +7,7 @@ class AuthenticationController < ApplicationController
 
     if user_info.is_a? String
       puts 'test'
-      redirect_to "#{ENV['DESTINDER_CLIENT_URL']}login_select?login_token=#{user_info}"
+      redirect_to "#{ENV['DESTINDER_CLIENT_URL']}/login_select?login_token=#{user_info}"
     else
       puts 'test'
       display_name = user_info[:display_name]
