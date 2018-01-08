@@ -121,7 +121,7 @@ class Fireteam < ApplicationRecord
 
     membership_id = data['Response'][0]['membershipId']
     membership_type = data['Response'][0]['membershipType']
-    last_character = get_recent_character(membership_id, membership_type)
+    last_character = get_recent_trials_character(membership_id, membership_type)
 
     recent_request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{last_character}/Stats/Activities/?mode=39&count=15&lc=en")
     recent_data = JSON.parse(recent_request.body)
@@ -193,6 +193,25 @@ class Fireteam < ApplicationRecord
         last_played = char[1]['dateLastPlayed']
         @last_character = char[0]
       end
+    end
+
+    @last_character
+  end
+
+  def self.get_recent_trials_character(id, type)
+    @request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{type}/Profile/#{id}/?components=Characters,205")
+    @characters_data = JSON.parse(@request.body)
+    data = @characters_data['Response']['characters']['data']
+
+    @last_character = data.first[0]
+    last_played = data.first[1]['dateLastPlayed']
+
+    data.each do |char|
+      recent_request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{type}/Account/#{id}/Character/#{char[0]}/Stats/Activities/?mode=39&count=15&lc=en")
+      data = JSON.parse(recent_request.body)
+      next unless (!char[1]['dateLastPlayed'].nil? && (Time.parse(char[1]['dateLastPlayed']) > Time.parse(last_played))) || data['Response'] != {}
+      last_played = char[1]['dateLastPlayed']
+      @last_character = char[0]
     end
 
     @last_character
