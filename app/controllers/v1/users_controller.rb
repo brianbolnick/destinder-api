@@ -17,6 +17,20 @@ module V1
       render json: @user.to_json(include: [:badges])
     end
 
+    def reputation
+      @user = User.find_by(id: params[:user_id])
+      votes_for = @user.votes_for
+      votes_against = @user.votes_against
+      total_votes = votes_against + votes_for
+      rep = total_votes.positive? ? (votes_for.to_f / total_votes.to_f).round(2) * 100 : 100
+      render json: {
+        votes_for: votes_for,
+        votes_against: votes_against,
+        total_votes: total_votes,
+        reputation_score: rep
+      }
+    end
+
     # POST /users
     def create
       @user = User.new(user_params)
