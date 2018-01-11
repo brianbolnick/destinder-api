@@ -40,7 +40,7 @@ Rails.application.routes.draw do
       get 'characters', to: 'users#characters'
       get 'characters/:id', to: 'users#character'
       get 'characters/stats(/:mode)', to: 'users#stats'
-      get 'characters/:id/stats(/:mode)', to: 'users#character_stats'
+      get 'characters/:character_id/stats(/:mode)', to: 'users#character_stats'
     end
     resources :lfg_posts
     resources :fireteams

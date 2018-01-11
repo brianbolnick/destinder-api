@@ -5,6 +5,8 @@ module V1
     before_action :set_user, only: %i[show update destroy]
     before_action :authenticate_user!, only: %i[create update destroy upvote downvote unvote logout]
 
+    include CommonTools
+    include CommonConstants
     # GET /users
     def index
       @users = User.all.order(:created_at)
@@ -55,10 +57,6 @@ module V1
     def logout
       reset_session
     end
-    # # DELETE /users/1
-    # def destroy
-    #   @user.destroy
-    # end
 
     def characters
       @user = User.find_by(id: params[:user_id])
@@ -68,7 +66,9 @@ module V1
       chars.each do |character|
         data[character.character_id] = character.character_details.first
       end
-      render json: data.to_h
+      # new_data = data.to_h.sort_by{|x| x[1].last_login}.to_h
+      new_data = data.to_h.sort{|a,b| b[1].last_login <=> a[1].last_login}.to_h
+      render json: new_data
     end
 
     def character
@@ -84,8 +84,14 @@ module V1
     def character_stats
       puts params
       @user = User.find(params[:user_id])
-      FetchCharacterStatsJob.perform_later(@user, params[:id], params[:mode])
-      render json: { test: 'data' }
+      data = CommonTools.fetch_character_stats(
+        @user.api_membership_id,
+        @user.api_membership_type,
+        params[:character_id],
+        params[:mode]
+      )
+      # FetchCharacterStatsJob.perform_later(@user, params[:character_id], params[:mode])
+      render json: data
     end
 
     def upvote

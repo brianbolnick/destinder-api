@@ -58,6 +58,7 @@ module CommonTools
     }
     begin
       response = api_get("https://www.bungie.net/Platform/Destiny2/#{type}/Account/#{membership_id}/Character/#{character_id}/Stats/?modes=#{mode}")
+      # response = api_get("https://www.bungie.net/Platform/Destiny2/1/Account/4611686018465735201/Character/2305843009290558529/Stats/?modes=#{mode}")
 
       stat_data = JSON.parse(response.body)
       if stat_data['Response'][GAME_MODES[mode.to_i]] != {}
@@ -125,6 +126,8 @@ module CommonTools
             ability: stats['weaponKillsAbility']['basic']['displayValue'],
             super: stats['weaponKillsSuper']['basic']['displayValue'],
             meleee: stats['weaponKillsMelee']['basic']['displayValue'],
+            orbs_dropped: stats['orbsDropped']['basic']['displayValue'],
+            orbs_gathered: stats['orbsGathered']['basic']['displayValue'],
             longest_spree: stats['longestKillSpree']['basic']['displayValue'],
             best_weapon_type: stats['weaponBestType']['basic']['displayValue'],
             longest_life: stats['longestSingleLife']['basic']['displayValue'],
