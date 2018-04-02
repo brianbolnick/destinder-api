@@ -94,6 +94,12 @@ module V1
       render json: data
     end
 
+    def character_recent_games
+      @user = User.find(params[:user_id])
+      data = CommonTools.get_recent_games(@user.api_membership_type, @user.api_membership_id, params[:character_id])
+      render json: data
+    end
+
     def upvote
       if params[:user_id]
         voteable = User.find_by(id: params[:user_id].to_i)

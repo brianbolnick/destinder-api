@@ -218,4 +218,38 @@ module CommonTools
     end
     items.to_h
   end
+
+  def self.get_recent_games(membership_type, membership_id, character_id)
+    games = []
+
+    begin
+      recent_request = CommonTools.api_get("https://www.bungie.net/Platform/Destiny2/#{membership_type}/Account/#{membership_id}/Character/#{character_id}/Stats/Activities/?mode=39&count=50")
+      game_data = JSON.parse(recent_request.body)
+
+      game_data['Response']['activities'].each do |game|
+        instance_id = game['activityDetails']['instanceId']
+        game_info = {
+          instance_id: instance_id.to_i,
+          mode: game['activityDetails']['mode'],
+          game_date: game['period'],
+          standing: game['values']['standing']['basic']['value'],
+          completed: game['values']['completed']['basic']['displayValue'],
+          completion_reason: game['values']['completionReason']['basic']['displayValue'],
+          activity_duration: game['values']['activityDurationSeconds']['basic']['displayValue'],
+          kills: game['values']['kills']['basic']['value'],
+          deaths: game['values']['deaths']['basic']['value'],
+          kd_ratio: game['values']['killsDeathsRatio']['basic']['displayValue'],
+          kad_ratio: game['values']['killsDeathsAssists']['basic']['displayValue'],
+          efficiency: game['values']['efficiency']['basic']['displayValue']
+        }
+
+        games << game_info
+      end
+    rescue StandardError => e
+      puts e
+    end
+
+    games&.sort_by! { |x| x[:game_date] }
+    games.reverse
+  end
 end

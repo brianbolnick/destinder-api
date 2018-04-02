@@ -4,7 +4,7 @@ class User < ApplicationRecord
   has_merit
 
   has_many :lfg_posts, dependent: :destroy
-  has_many :characters
+  has_many :characters, dependent: :destroy
 
   acts_as_voter
   acts_as_voteable
