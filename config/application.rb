@@ -52,6 +52,11 @@ module DestinderApi
         origins 'https://www.destinder.com'
         resource '*', headers: :any, methods: %i[get post put delete options]
       end
+      
+      allow do
+        origins 'https://destinder.netlify.com'
+        resource '*', headers: :any, methods: %i[get post put delete options]
+      end
     end
 
     # For Devise when used in API mode
